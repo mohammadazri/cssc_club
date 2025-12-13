@@ -6,6 +6,7 @@ export function VaultScene({ className }: { className?: string }) {
   return (
     <SplineScene
       label="Digital Vault"
+      fallbackVariant="vault"
       sceneUrl={process.env.NEXT_PUBLIC_SPLINE_VAULT_SCENE}
       className={className}
     />
