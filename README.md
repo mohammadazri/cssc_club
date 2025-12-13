@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Operation "Zero-Day Recruit"
 
-## Getting Started
+A short, cinematic cybersecurity mission (landing → mission → debrief) designed to recruit curious students.
 
-First, run the development server:
+## Local dev
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create `.env.local` (optional). If you don’t set these, the app still runs and shows a clean placeholder instead of the 3D scene.
 
-## Learn More
+```bash
+# Spline scenes (paste the React-exported scene URLs)
+NEXT_PUBLIC_SPLINE_VAULT_SCENE=
+NEXT_PUBLIC_SPLINE_PHISHING_SCENE=
+NEXT_PUBLIC_SPLINE_MAINFRAME_SCENE=
 
-To learn more about Next.js, take a look at the following resources:
+# Recruitment links
+NEXT_PUBLIC_CLUB_JOIN_URL=
+NEXT_PUBLIC_CLUB_JOIN_FORM_URL=
+NEXT_PUBLIC_CLUB_DISCORD_URL=
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Production
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run lint
+npm run build
+npm run start
+```
 
-## Deploy on Vercel
+## Notes
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Audio is optional. The UI includes an “Audio” toggle and safely ignores missing files.
+- The leaderboard is local-only (stored in browser localStorage).
