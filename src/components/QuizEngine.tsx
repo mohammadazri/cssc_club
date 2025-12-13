@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import clsx from "clsx";
 
 import type { Question, RunSummary, SceneId } from "@/types/quiz";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
@@ -12,6 +13,13 @@ import { TrapOverlay } from "@/components/3d/TrapOverlay";
 import { VaultScene } from "@/components/3d/VaultScene";
 import { PhishingScene } from "@/components/3d/PhishingScene";
 import { MainframeScene } from "@/components/3d/MainframeScene";
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PSYCHOLOGY-DRIVEN CONSTANTS
+   ══════════════════════════════════════════════════════════════════════════ */
+const TIME_PER_QUESTION = 45; // seconds - creates urgency
+const CRITICAL_TIME = 10; // seconds - triggers anxiety pulse
+const MAX_HEALTH = 3;
 
 function pointsForDifficulty(difficulty: Question["difficulty"]) {
   switch (difficulty) {
@@ -24,15 +32,166 @@ function pointsForDifficulty(difficulty: Question["difficulty"]) {
   }
 }
 
+function getDifficultyColor(difficulty: Question["difficulty"]) {
+  switch (difficulty) {
+    case "ScriptKiddie":
+      return "text-cyber-green";
+    case "Hacker":
+      return "text-warning-amber";
+    case "Elite":
+      return "text-alert-red";
+  }
+}
+
 function Scene({ sceneId }: { sceneId: SceneId }) {
   if (sceneId === "vault") return <VaultScene className="h-full" />;
   if (sceneId === "phishing") return <PhishingScene className="h-full" />;
   return <MainframeScene className="h-full" />;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   HEALTH DISPLAY - Loss Aversion Psychology
+   ══════════════════════════════════════════════════════════════════════════ */
+function HealthDisplay({ current, max }: { current: number; max: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="mr-1 text-xs uppercase tracking-wider text-zinc-500">SYS</span>
+      {Array.from({ length: max }).map((_, i) => {
+        const isActive = i < current;
+        const isCritical = current === 1 && isActive;
+        const isWarning = current === 2 && isActive;
+        return (
+          <div
+            key={i}
+            className={clsx(
+              "h-5 w-8 rounded-sm border transition-all duration-300",
+              isActive && !isCritical && !isWarning && "health-segment active border-cyber-green/50",
+              isWarning && "health-segment warning border-warning-amber/50",
+              isCritical && "health-segment critical border-alert-red/50",
+              !isActive && "health-segment lost border-white/10"
+            )}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   COUNTDOWN TIMER - Urgency & Scarcity Psychology
+   ══════════════════════════════════════════════════════════════════════════ */
+function CountdownTimer({ 
+  seconds, 
+  isCritical 
+}: { 
+  seconds: number; 
+  isCritical: boolean;
+}) {
+  const minutes = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  const display = `${minutes}:${secs.toString().padStart(2, "0")}`;
+  
+  return (
+    <div className={clsx(
+      "font-mono text-2xl font-bold tracking-wider transition-all",
+      isCritical ? "animate-countdown" : "text-zinc-300"
+    )}>
+      <span className="mr-1 text-xs uppercase tracking-wider text-zinc-500">TIME</span>
+      {display}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SCORE DISPLAY - Achievement & Dopamine
+   ══════════════════════════════════════════════════════════════════════════ */
+function ScoreDisplay({ score, justEarned }: { score: number; justEarned: number | null }) {
+  return (
+    <div className="relative flex items-center gap-2">
+      <span className="text-xs uppercase tracking-wider text-zinc-500">PTS</span>
+      <span className="font-mono text-xl font-bold text-cyber-green text-glow-green">
+        {score.toLocaleString()}
+      </span>
+      <AnimatePresence>
+        {justEarned && (
+          <motion.span
+            initial={{ opacity: 0, y: 0, scale: 0.8 }}
+            animate={{ opacity: 1, y: -20, scale: 1 }}
+            exit={{ opacity: 0, y: -40 }}
+            className="absolute -right-8 font-mono text-sm font-bold text-cyber-green"
+          >
+            +{justEarned}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PROGRESS BAR - Visual Progress Feedback
+   ══════════════════════════════════════════════════════════════════════════ */
+function ProgressBar({ current, total }: { current: number; total: number }) {
+  const progress = ((current + 1) / total) * 100;
+  
+  return (
+    <div className="flex items-center gap-3">
+      <span className="font-mono text-xs text-zinc-400">
+        {current + 1}<span className="text-zinc-600">/</span>{total}
+      </span>
+      <div className="h-1.5 w-28 overflow-hidden rounded-full bg-white/10">
+        <motion.div
+          className="h-full bg-gradient-to-r from-cyber-green/80 to-cyber-green"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THREAT INDICATOR - Tension Building
+   ══════════════════════════════════════════════════════════════════════════ */
+function ThreatLevel({ difficulty }: { difficulty: Question["difficulty"] }) {
+  const levels = { ScriptKiddie: 1, Hacker: 2, Elite: 3 };
+  const level = levels[difficulty];
+  
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs uppercase tracking-wider text-zinc-500">THREAT</span>
+      <div className="flex gap-0.5">
+        {[1, 2, 3].map((l) => (
+          <div
+            key={l}
+            className={clsx(
+              "h-3 w-1 rounded-sm transition-all",
+              l <= level
+                ? level === 3
+                  ? "bg-alert-red shadow-[0_0_6px_rgba(255,34,68,0.6)]"
+                  : level === 2
+                    ? "bg-warning-amber shadow-[0_0_6px_rgba(255,170,0,0.5)]"
+                    : "bg-cyber-green shadow-[0_0_6px_rgba(0,255,136,0.5)]"
+                : "bg-white/10"
+            )}
+          />
+        ))}
+      </div>
+      <span className={clsx("text-xs font-medium", getDifficultyColor(difficulty))}>
+        {difficulty}
+      </span>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MAIN QUIZ ENGINE
+   ══════════════════════════════════════════════════════════════════════════ */
 export function QuizEngine({ questions }: { questions: Question[] }) {
   const router = useRouter();
   const { saveRun } = useGamePersistence();
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const [startedAtIso] = useState(() => new Date().toISOString());
   const [runId] = useState(() =>
@@ -42,57 +201,30 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
   );
 
   const [idx, setIdx] = useState(0);
-  const [health, setHealth] = useState(3);
+  const [health, setHealth] = useState(MAX_HEALTH);
   const [score, setScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [locked, setLocked] = useState(false);
   const [trapOpen, setTrapOpen] = useState(false);
   const [trapTitle, setTrapTitle] = useState("Trap Triggered");
   const [trapMessage, setTrapMessage] = useState("");
+  const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
+  const [justEarned, setJustEarned] = useState<number | null>(null);
+  const [shaking, setShaking] = useState(false);
 
   const [audioEnabled, setAudioEnabled] = useState(false);
   const sfx = useSoundEffects(audioEnabled);
 
   const q = questions[idx];
   const total = questions.length;
-  const progress = Math.round(((idx + 1) / total) * 100);
+  const isCriticalTime = timeLeft <= CRITICAL_TIME;
 
-  const hud = useMemo(() => {
-    return (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-zinc-400">
-            Level {idx + 1}/{total}
-          </p>
-          <div className="h-2 w-32 overflow-hidden rounded-full bg-white/10">
-            <div
-              className="h-full bg-cyber-green"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <p className="text-xs text-zinc-300">
-            Health: <span className="font-semibold text-zinc-100">{health}</span>
-          </p>
-          <p className="text-xs text-zinc-300">
-            Score: <span className="font-semibold text-zinc-100">{score}</span>
-          </p>
-          <label className="flex items-center gap-2 text-xs text-zinc-400">
-            <input
-              type="checkbox"
-              className="h-4 w-4 accent-cyber-green"
-              checked={audioEnabled}
-              onChange={(e) => setAudioEnabled(e.target.checked)}
-            />
-            Audio
-          </label>
-        </div>
-      </div>
-    );
-  }, [audioEnabled, health, idx, progress, score, total]);
+  // Reset timer when question changes
+  useEffect(() => {
+    setTimeLeft(TIME_PER_QUESTION);
+  }, [idx]);
 
-  function finish(outcome: RunSummary["outcome"], nextHealth: number, nextScore: number, nextCorrect: number) {
+  const finish = useCallback((outcome: RunSummary["outcome"], nextHealth: number, nextScore: number, nextCorrect: number) => {
     const finishedAtIso = new Date().toISOString();
     const summary: RunSummary = {
       runId,
@@ -106,9 +238,43 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
     };
     saveRun(summary);
     router.push("/debrief");
-  }
+  }, [runId, startedAtIso, total, saveRun, router]);
 
-  async function onAnswer(isTrap: boolean) {
+  const handleTimeout = useCallback(() => {
+    setLocked(true);
+    sfx.play("fail");
+    const nextHealth = Math.max(0, health - 1);
+    setHealth(nextHealth);
+    setShaking(true);
+    setTimeout(() => setShaking(false), 500);
+    setTrapTitle("TIME EXPIRED");
+    setTrapMessage("You took too long to respond. In real attacks, hesitation can be costly.");
+    setTrapOpen(true);
+
+    if (nextHealth <= 0) {
+      setTimeout(() => finish("failed", nextHealth, score, correctCount), 450);
+    }
+  }, [health, sfx, finish, score, correctCount]);
+
+  // Countdown timer
+  useEffect(() => {
+    if (trapOpen || locked) return;
+    
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          handleTimeout();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [idx, trapOpen, locked, handleTimeout]);
+
+  function onAnswer(isTrap: boolean) {
     if (locked) return;
     setLocked(true);
 
@@ -116,14 +282,14 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
       sfx.play("fail");
       const nextHealth = Math.max(0, health - 1);
       setHealth(nextHealth);
-      setTrapTitle("Wrong move");
+      setShaking(true);
+      setTimeout(() => setShaking(false), 500);
+      setTrapTitle("INTRUSION DETECTED");
       setTrapMessage(q.explanation);
       setTrapOpen(true);
 
       if (nextHealth <= 0) {
-        window.setTimeout(() => {
-          finish("failed", nextHealth, score, correctCount);
-        }, 450);
+        setTimeout(() => finish("failed", nextHealth, score, correctCount), 450);
       }
       return;
     }
@@ -134,16 +300,16 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
     const nextCorrect = correctCount + 1;
     setScore(nextScore);
     setCorrectCount(nextCorrect);
+    setJustEarned(earned);
+    setTimeout(() => setJustEarned(null), 1000);
 
     const isLast = idx >= total - 1;
     if (isLast) {
-      window.setTimeout(() => {
-        finish("success", health, nextScore, nextCorrect);
-      }, 450);
+      setTimeout(() => finish("success", health, nextScore, nextCorrect), 450);
       return;
     }
 
-    window.setTimeout(() => {
+    setTimeout(() => {
       setIdx((v) => v + 1);
       setLocked(false);
     }, 420);
@@ -158,8 +324,75 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
     }
   }
 
+  const hud = useMemo(() => (
+    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-surface/80 backdrop-blur-sm">
+      {/* Scan line effect */}
+      <div className="scan-line" />
+      
+      {/* Mobile: Stacked layout */}
+      <div className="flex flex-col gap-3 p-3 sm:hidden">
+        <div className="flex items-center justify-between">
+          <ProgressBar current={idx} total={total} />
+          <CountdownTimer seconds={timeLeft} isCritical={isCriticalTime} />
+        </div>
+        <div className="flex items-center justify-between">
+          <ThreatLevel difficulty={q.difficulty} />
+          <div className="flex items-center gap-3">
+            <HealthDisplay current={health} max={MAX_HEALTH} />
+            <ScoreDisplay score={score} justEarned={justEarned} />
+            <button
+              onClick={() => setAudioEnabled(!audioEnabled)}
+              className={clsx(
+                "flex h-7 w-7 items-center justify-center rounded-md border transition-all text-sm",
+                audioEnabled 
+                  ? "border-cyber-green/50 bg-cyber-green/10 text-cyber-green"
+                  : "border-white/10 bg-white/5 text-zinc-500"
+              )}
+              aria-label={audioEnabled ? "Mute audio" : "Enable audio"}
+            >
+              {audioEnabled ? "🔊" : "🔇"}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop: Single row */}
+      <div className="hidden sm:flex flex-wrap items-center justify-between gap-4 px-4 py-3 lg:px-5 lg:py-4">
+        <div className="flex items-center gap-4 lg:gap-6">
+          <ProgressBar current={idx} total={total} />
+          <ThreatLevel difficulty={q.difficulty} />
+        </div>
+        
+        <div className="flex items-center gap-4 lg:gap-6">
+          <CountdownTimer seconds={timeLeft} isCritical={isCriticalTime} />
+          <HealthDisplay current={health} max={MAX_HEALTH} />
+          <ScoreDisplay score={score} justEarned={justEarned} />
+          
+          <button
+            onClick={() => setAudioEnabled(!audioEnabled)}
+            className={clsx(
+              "flex h-8 w-8 items-center justify-center rounded-md border transition-all",
+              audioEnabled 
+                ? "border-cyber-green/50 bg-cyber-green/10 text-cyber-green"
+                : "border-white/10 bg-white/5 text-zinc-500 hover:text-zinc-300"
+            )}
+            aria-label={audioEnabled ? "Mute audio" : "Enable audio"}
+          >
+            {audioEnabled ? "🔊" : "🔇"}
+          </button>
+        </div>
+      </div>
+    </div>
+  ), [audioEnabled, health, idx, isCriticalTime, justEarned, q.difficulty, score, timeLeft, total]);
+
   return (
-    <div className="mx-auto w-full max-w-6xl px-4 py-10">
+    <div 
+      ref={containerRef}
+      className={clsx(
+        "w-full min-h-screen px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8",
+        shaking && "animate-shake"
+      )}
+    >
       <TrapOverlay
         open={trapOpen}
         title={trapTitle}
@@ -168,55 +401,87 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
         canContinue={health > 0}
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="order-2 lg:order-1">
+      <div className="grid gap-4 lg:gap-6 lg:grid-cols-[1.1fr_0.9fr] xl:grid-cols-[1.15fr_0.85fr]">
+        {/* Question Panel */}
+        <div className="order-2 lg:order-1 flex flex-col">
           {hud}
 
           <motion.div
             key={q.id}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22 }}
-            className="mt-6 rounded-2xl border border-white/10 bg-void-black/60 p-6"
+            initial={{ opacity: 0, y: 12, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="mt-4 flex-1 overflow-hidden rounded-xl border border-white/10 bg-surface/80 backdrop-blur-sm"
           >
-            <p className="text-xs uppercase tracking-[0.25em] text-zinc-400">
-              Security Challenge · {q.difficulty}
-            </p>
-            <p className="mt-3 text-sm leading-6 text-zinc-200">{q.scenario}</p>
-            <h2 className="mt-4 text-lg font-semibold text-zinc-50">
-              {q.question}
-            </h2>
-
-            <div className="mt-5 grid gap-3">
-              {q.options.map((opt) => (
-                <OptionButton
-                  key={opt.id}
-                  disabled={locked}
-                  onClick={() => {
-                    sfx.play("click");
-                    onAnswer(opt.isTrap);
-                  }}
-                >
-                  {opt.text}
-                </OptionButton>
-              ))}
+            {/* Header bar */}
+            <div className="flex items-center justify-between border-b border-white/5 bg-white/5 px-4 py-3 sm:px-5">
+              <div className="flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-alert-red animate-pulse" />
+                <span className="font-mono text-xs uppercase tracking-wider text-zinc-400">
+                  SECURITY CHALLENGE
+                </span>
+              </div>
+              <span className={clsx("text-xs font-medium", getDifficultyColor(q.difficulty))}>
+                {q.difficulty.toUpperCase()}
+              </span>
             </div>
 
-            <p className="mt-5 text-xs text-zinc-500">
-              Tip: If something feels urgent, that’s often the point.
-            </p>
+            <div className="p-4 sm:p-6">
+              {/* Scenario */}
+              <div className="rounded-lg border border-white/5 bg-surface-light/50 p-3 sm:p-4">
+                <p className="text-sm leading-relaxed text-zinc-300">{q.scenario}</p>
+              </div>
+
+              {/* Question */}
+              <h2 className="mt-4 text-base font-semibold leading-snug text-zinc-50 sm:mt-5 sm:text-lg">
+                {q.question}
+              </h2>
+
+              {/* Options */}
+              <div className="mt-4 grid gap-2 sm:mt-6 sm:gap-3">
+                {q.options.map((opt, optIdx) => (
+                  <OptionButton
+                    key={opt.id}
+                    disabled={locked}
+                    index={optIdx}
+                    onClick={() => {
+                      sfx.play("click");
+                      onAnswer(opt.isTrap);
+                    }}
+                  >
+                    {opt.text}
+                  </OptionButton>
+                ))}
+              </div>
+
+              {/* Tip */}
+              <p className="mt-4 flex items-center gap-2 text-xs text-zinc-500 sm:mt-6">
+                <span className="text-warning-amber">⚠</span>
+                Tip: Urgency is a manipulation tactic. Stay calm. Verify.
+              </p>
+            </div>
           </motion.div>
         </div>
 
+        {/* Scene Panel */}
         <div className="order-1 lg:order-2">
-          <div className="sticky top-6 h-[380px] lg:h-[540px]">
-            <Scene sceneId={q.sceneId} />
-            <div className="mt-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs text-zinc-400">
-                Scene: <span className="text-zinc-100">{q.sceneId}</span>
-                {" · "}
-                Objective: <span className="text-zinc-100">Stay calm. Verify.</span>
-              </p>
+          <div className="lg:sticky lg:top-4">
+            <div className="overflow-hidden rounded-xl border border-white/10 bg-surface/60">
+              <div className="h-48 sm:h-64 lg:h-80 xl:h-96">
+                <Scene sceneId={q.sceneId} />
+              </div>
+              {/* Scene info bar */}
+              <div className="flex items-center justify-between border-t border-white/5 bg-white/5 px-3 py-2 sm:px-4 sm:py-3">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyber-green animate-pulse" />
+                  <span className="font-mono text-xs uppercase tracking-wider text-zinc-400">
+                    {q.sceneId}
+                  </span>
+                </div>
+                <span className="text-xs text-zinc-500 hidden sm:inline">
+                  Objective: <span className="text-zinc-300">Identify the threat</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>

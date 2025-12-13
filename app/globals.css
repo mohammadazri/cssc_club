@@ -1,20 +1,32 @@
 @import "tailwindcss";
 
 :root {
-  --background: #05060a;
-  --foreground: #e6e7ea;
-  --void-black: #05060a;
-  --cyber-green: #22c55e;
-  --alert-red: #ef4444;
+  --background: #0a0f1a;
+  --foreground: #e8eaf0;
+  --void-black: #0a0f1a;
+  --surface: #111827;
+  --surface-light: #1f2937;
+  --cyber-green: #00ff88;
+  --cyber-green-dim: #22c55e;
+  --alert-red: #ff2244;
+  --alert-red-dim: #ef4444;
+  --warning-amber: #ffaa00;
   --panel: rgba(255, 255, 255, 0.06);
+  --glow-green: 0 0 20px rgba(0, 255, 136, 0.4), 0 0 40px rgba(0, 255, 136, 0.2);
+  --glow-red: 0 0 20px rgba(255, 34, 68, 0.5), 0 0 40px rgba(255, 34, 68, 0.25);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-void-black: var(--void-black);
+  --color-surface: var(--surface);
+  --color-surface-light: var(--surface-light);
   --color-cyber-green: var(--cyber-green);
+  --color-cyber-green-dim: var(--cyber-green-dim);
   --color-alert-red: var(--alert-red);
+  --color-alert-red-dim: var(--alert-red-dim);
+  --color-warning-amber: var(--warning-amber);
   --color-panel: var(--panel);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -22,77 +34,258 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #05060a;
-    --foreground: #e6e7ea;
+    --background: #0a0f1a;
+    --foreground: #e8eaf0;
   }
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   IMMERSIVE BACKGROUND - Layered depth with ambient pulse
+   ══════════════════════════════════════════════════════════════════════════ */
 body {
   background:
-    radial-gradient(
-      circle at 30% 20%,
-      rgba(34, 197, 94, 0.14),
-      transparent 55%
-    ),
-    radial-gradient(
-      circle at 70% 70%,
-      rgba(239, 68, 68, 0.08),
-      transparent 52%
-    ),
-    var(--background);
+    radial-gradient(ellipse at 20% 0%, rgba(0, 255, 136, 0.06), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.04), transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(17, 24, 39, 0.6), transparent 70%),
+    linear-gradient(180deg, #0a0f1a 0%, #111827 50%, #0a0f1a 100%);
   color: var(--foreground);
   font-family: var(--font-sans);
+  overflow-x: hidden;
+  min-height: 100vh;
 }
 
+/* ══════════════════════════════════════════════════════════════════════════
+   CRT SCANLINES - Subtle retro-tech immersion
+   ══════════════════════════════════════════════════════════════════════════ */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  opacity: 0.6;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   AMBIENT VIGNETTE - Focus attention to center
+   ══════════════════════════════════════════════════════════════════════════ */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9998;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ANIMATIONS - Psychological tension builders
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Blinking caret for terminal effect */
 @keyframes caret {
-  0%,
-  45% {
-    opacity: 1;
-  }
-  55%,
-  100% {
-    opacity: 0;
-  }
+  0%, 45% { opacity: 1; }
+  55%, 100% { opacity: 0; }
 }
-
 .animate-caret {
   animation: caret 0.95s steps(1, end) infinite;
 }
 
+/* Glitch jitter for error states */
 @keyframes glitch-jitter {
-  0% {
-    transform: translate(0, 0);
-  }
-  20% {
-    transform: translate(-1px, 1px);
-  }
-  40% {
-    transform: translate(1px, -1px);
-  }
-  60% {
-    transform: translate(-1px, 0);
-  }
-  80% {
-    transform: translate(1px, 1px);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
+  0% { transform: translate(0, 0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -2px); }
+  100% { transform: translate(0, 0); }
 }
+
+/* Heavy glitch for trap triggers */
+@keyframes glitch-heavy {
+  0%, 100% { transform: translate(0); filter: hue-rotate(0deg); }
+  10% { transform: translate(-3px, 2px); }
+  20% { transform: translate(3px, -2px); filter: hue-rotate(90deg); }
+  30% { transform: translate(-2px, -1px); }
+  40% { transform: translate(2px, 1px); filter: hue-rotate(-90deg); }
+  50% { transform: translate(-1px, 2px); }
+  60% { transform: translate(1px, -2px); filter: hue-rotate(180deg); }
+  70% { transform: translate(3px, 1px); }
+  80% { transform: translate(-3px, -1px); }
+  90% { transform: translate(1px, 2px); filter: hue-rotate(-180deg); }
+}
+
+/* Pulsing glow for urgency */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.02); }
+}
+
+/* Heartbeat for low health */
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.15); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  56% { transform: scale(1); }
+}
+
+/* Screen shake for wrong answers */
+@keyframes screen-shake {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-8px) rotate(-0.5deg); }
+  20% { transform: translateX(8px) rotate(0.5deg); }
+  30% { transform: translateX(-6px) rotate(-0.3deg); }
+  40% { transform: translateX(6px) rotate(0.3deg); }
+  50% { transform: translateX(-4px); }
+  60% { transform: translateX(4px); }
+  70% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+  90% { transform: translateX(-1px); }
+}
+
+/* Countdown urgency pulse */
+@keyframes countdown-pulse {
+  0%, 100% { color: var(--warning-amber); text-shadow: 0 0 10px rgba(255, 170, 0, 0.5); }
+  50% { color: var(--alert-red); text-shadow: 0 0 20px rgba(255, 34, 68, 0.8); }
+}
+
+/* Floating particles */
+@keyframes float-up {
+  0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.6; }
+  90% { opacity: 0.6; }
+  100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+}
+
+/* Success celebration */
+@keyframes success-burst {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Scan line sweep */
+@keyframes scan-sweep {
+  0% { top: -10%; opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { top: 110%; opacity: 0; }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ══════════════════════════════════════════════════════════════════════════ */
 
 .glitch {
   position: relative;
 }
-
+.glitch::before,
 .glitch::after {
   content: attr(data-text);
   position: absolute;
   left: 0;
   top: 0;
   width: 100%;
-  opacity: 0.12;
-  color: var(--alert-red);
-  transform: translate(1px, 0);
-  animation: glitch-jitter 1.6s infinite;
   pointer-events: none;
+}
+.glitch::before {
+  color: var(--cyber-green);
+  opacity: 0.08;
+  transform: translate(-2px, 0);
+  animation: glitch-jitter 2s infinite;
+}
+.glitch::after {
+  color: var(--alert-red);
+  opacity: 0.08;
+  transform: translate(2px, 0);
+  animation: glitch-jitter 2.5s infinite reverse;
+}
+
+.animate-shake {
+  animation: screen-shake 0.5s ease-out;
+}
+
+.animate-heartbeat {
+  animation: heartbeat 1.2s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-countdown {
+  animation: countdown-pulse 1s ease-in-out infinite;
+}
+
+.animate-success {
+  animation: success-burst 0.4s ease-out;
+}
+
+.animate-glitch-heavy {
+  animation: glitch-heavy 0.3s ease-out;
+}
+
+/* Glow effects */
+.glow-green {
+  box-shadow: var(--glow-green);
+}
+.glow-red {
+  box-shadow: var(--glow-red);
+}
+.text-glow-green {
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.6), 0 0 20px rgba(0, 255, 136, 0.3);
+}
+.text-glow-red {
+  text-shadow: 0 0 10px rgba(255, 34, 68, 0.6), 0 0 20px rgba(255, 34, 68, 0.3);
+}
+
+/* Scan line overlay */
+.scan-line {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.3), transparent);
+  animation: scan-sweep 4s linear infinite;
+  pointer-events: none;
+}
+
+/* Health bar segments */
+.health-segment {
+  transition: all 0.3s ease;
+}
+.health-segment.active {
+  background: var(--cyber-green);
+  box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+}
+.health-segment.warning {
+  background: var(--warning-amber);
+  box-shadow: 0 0 10px rgba(255, 170, 0, 0.5);
+}
+.health-segment.critical {
+  background: var(--alert-red);
+  box-shadow: 0 0 10px rgba(255, 34, 68, 0.5);
+  animation: heartbeat 0.8s ease-in-out infinite;
+}
+.health-segment.lost {
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: none;
+}
+
+/* Dramatic borders */
+.border-glow-green {
+  border-color: rgba(0, 255, 136, 0.4);
+  box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.05), 0 0 15px rgba(0, 255, 136, 0.1);
+}
+.border-glow-red {
+  border-color: rgba(255, 34, 68, 0.4);
+  box-shadow: inset 0 0 20px rgba(255, 34, 68, 0.1), 0 0 15px rgba(255, 34, 68, 0.15);
 }
