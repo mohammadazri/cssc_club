@@ -1,7 +1,7 @@
 import { DebriefClient } from "@/debrief/DebriefClient";
 
 export const metadata = {
-  title: "Debrief · Zero-Day Recruit",
+  title: "Debrief · CSSC Club",
   description: "Review your results and join the cyber security club.",
 };
 

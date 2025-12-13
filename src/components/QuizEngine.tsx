@@ -202,6 +202,33 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
       : String(Date.now()),
   );
 
+  // Utility: in-place Fisher-Yates shuffle (returns new array)
+  function shuffleArray<T>(input: T[]) {
+    const arr = input.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Shuffle questions and their options once per run (stable during the run)
+  const shuffledQuestions = useMemo(() => {
+    // deep-ish clone to avoid mutating props
+    const qClone = questions.map((q) => ({
+      ...q,
+      options: q.options.map((o) => ({ ...o })),
+    }));
+
+    // shuffle options per question
+    qClone.forEach((q) => {
+      q.options = shuffleArray(q.options);
+    });
+
+    // shuffle question order
+    return shuffleArray(qClone);
+  }, [questions, runId]);
+
   const [idx, setIdx] = useState(0);
   const [health, setHealth] = useState(MAX_HEALTH);
   const [score, setScore] = useState(0);
@@ -263,8 +290,8 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
       }
     }, [audioEnabled]);
 
-  const q = questions[idx];
-  const total = questions.length;
+  const q = shuffledQuestions[idx];
+  const total = shuffledQuestions.length;
   const isCriticalTime = timeLeft <= CRITICAL_TIME;
 
   // Reset timer whenever the question index changes

@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Operation Zero-Day Recruit",
+  title: "Home | CSSC Club",
   description:
     "A cinematic cybersecurity mission to discover and recruit new talent.",
 };

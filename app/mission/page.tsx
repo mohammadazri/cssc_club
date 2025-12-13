@@ -2,7 +2,7 @@ import { MissionLoader } from "@/components/MissionLoader";
 import { QUESTIONS } from "@/data/questions";
 
 export const metadata = {
-  title: "Mission · Zero-Day Recruit",
+  title: "Mission · CSSC Club",
   description: "Run the mission. Answer carefully. Survive the traps.",
 };
 
