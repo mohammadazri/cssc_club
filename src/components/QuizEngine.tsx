@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
@@ -316,6 +317,7 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
   }
 
   function continueAfterTrap() {
+    sfx.play("click");
     setTrapOpen(false);
     setLocked(false);
     const isLast = idx >= total - 1;
@@ -325,9 +327,15 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
   }
 
   const hud = useMemo(() => (
-    <div className="relative overflow-hidden rounded-xl border border-white/10 bg-surface/80 backdrop-blur-sm">
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: "easeOut" }}
+      className="relative overflow-hidden rounded-xl border border-white/10 bg-surface/80 backdrop-blur-sm"
+    >
       {/* Scan line effect */}
       <div className="scan-line" />
+      <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_1px_1px,#20e3b2_1px,transparent_0)] [background-size:16px_16px]" />
       
       {/* Mobile: Stacked layout */}
       <div className="flex flex-col gap-3 p-3 sm:hidden">
@@ -341,7 +349,10 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
             <HealthDisplay current={health} max={MAX_HEALTH} />
             <ScoreDisplay score={score} justEarned={justEarned} />
             <button
-              onClick={() => setAudioEnabled(!audioEnabled)}
+              onClick={() => {
+                sfx.play("click");
+                setAudioEnabled(!audioEnabled);
+              }}
               className={clsx(
                 "flex h-7 w-7 items-center justify-center rounded-md border transition-all text-sm",
                 audioEnabled 
@@ -369,7 +380,10 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
           <ScoreDisplay score={score} justEarned={justEarned} />
           
           <button
-            onClick={() => setAudioEnabled(!audioEnabled)}
+            onClick={() => {
+              sfx.play("click");
+              setAudioEnabled(!audioEnabled);
+            }}
             className={clsx(
               "flex h-8 w-8 items-center justify-center rounded-md border transition-all",
               audioEnabled 
@@ -382,17 +396,32 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   ), [audioEnabled, health, idx, isCriticalTime, justEarned, q.difficulty, score, timeLeft, total]);
 
   return (
     <div 
       ref={containerRef}
       className={clsx(
-        "w-full min-h-screen px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8",
+        "relative w-full min-h-screen overflow-hidden px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8",
         shaking && "animate-shake"
       )}
     >
+      {/* Ambient hacker grid + glow */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(32,227,178,0.08),transparent_30%),radial-gradient(circle_at_80%_0,rgba(255,64,112,0.08),transparent_28%),radial-gradient(circle_at_50%_80%,rgba(59,130,246,0.08),transparent_26%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.04)_1px,transparent_1px)] bg-[size:22px_22px] opacity-25" />
+
+      {/* Abort Button */}
+      <div className="relative mb-4 flex justify-end">
+        <Link
+          href="/"
+          onClick={() => sfx.play("click")}
+          className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-200 hover:bg-white/10"
+        >
+          Abort
+        </Link>
+      </div>
+
       <TrapOverlay
         open={trapOpen}
         title={trapTitle}
@@ -466,7 +495,12 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
         {/* Scene Panel */}
         <div className="order-1 lg:order-2">
           <div className="lg:sticky lg:top-4">
-            <div className="overflow-hidden rounded-xl border border-white/10 bg-surface/60">
+            <motion.div
+              initial={{ opacity: 0, x: 12 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className="overflow-hidden rounded-xl border border-white/10 bg-surface/60 shadow-[0_0_30px_rgba(0,255,136,0.08)]"
+            >
               <div className="h-48 sm:h-64 lg:h-80 xl:h-96">
                 <Scene sceneId={q.sceneId} />
               </div>
@@ -482,7 +516,7 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
                   Objective: <span className="text-zinc-300">Identify the threat</span>
                 </span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
