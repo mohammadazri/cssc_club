@@ -1,51 +1,104 @@
 "use client";
 
 import { Howl } from "howler";
-import { useMemo } from "react";
+import { useRef, useCallback, useEffect } from "react";
 
-type Sfx = "success" | "fail" | "click";
+type Sfx = "success" | "fail" | "click" | "ambient";
 
-function safePlay(howl: Howl | null) {
+interface SoundRefs {
+  success: Howl | null;
+  fail: Howl | null;
+  click: Howl | null;
+  ambient: Howl | null;
+}
+
+function safePlay(howl: Howl | null, preventRestart = false) {
   if (!howl) return;
   try {
+    // For ambient/looping sounds, prevent restart
+    // For short SFX, always allow play
+    if (preventRestart && howl.playing()) {
+      return;
+    }
     howl.play();
   } catch {
     // Ignore missing/blocked audio.
   }
 }
 
+function safeStop(howl: Howl | null) {
+  if (!howl) return;
+  try {
+    howl.stop();
+  } catch {
+    // Ignore missing/blocked audio.
+  }
+}
+
 export function useSoundEffects(enabled: boolean) {
-  const sounds = useMemo(() => {
-    if (!enabled) {
-      return {
-        success: null,
-        fail: null,
-        click: null,
-      } as const;
-    }
+  const soundsRef = useRef<SoundRefs | null>(null);
+  const initializedRef = useRef(false);
+
+  // Initialize sounds only once
+  useEffect(() => {
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
     const base = "/audio";
+    
     const mk = (file: string) =>
       new Howl({
         src: [`${base}/${file}`],
-        volume: 0.35,
+        volume: 0.55,
         preload: true,
-        onloaderror: () => {
-          // Swallow missing assets.
-        },
-        onplayerror: () => {
-          // Swallow autoplay restrictions.
-        },
+        onloaderror: () => {},
+        onplayerror: () => {},
       });
 
-    return {
-      success: mk("success.mp3"),
-      fail: mk("fail.mp3"),
+    const mkLoop = (file: string, volume = 0.18) =>
+      new Howl({
+        src: [`${base}/${file}`],
+        volume,
+        preload: true,
+        loop: true,
+        onloaderror: () => {},
+        onplayerror: () => {},
+      });
+
+    soundsRef.current = {
+      success: mk("success.wav"),
+      fail: mk("incorrect-buzzer-374194.mp3"),
       click: mk("click.mp3"),
-    } as const;
+      ambient: mkLoop("quiz_bg.mp3"),
+    };
+
+    return () => {
+      // Cleanup on unmount
+      if (soundsRef.current) {
+        Object.values(soundsRef.current).forEach((howl) => {
+          if (howl) howl.unload();
+        });
+        soundsRef.current = null;
+      }
+    };
+  }, []);
+
+  const play = useCallback((sfx: Sfx, force = false) => {
+    if ((!enabled && !force) || !soundsRef.current) return;
+    // Ambient uses preventRestart, short SFX don't
+    const preventRestart = sfx === "ambient";
+    safePlay(soundsRef.current[sfx], preventRestart);
   }, [enabled]);
 
-  return {
-    play: (sfx: Sfx) => safePlay(sounds[sfx]),
-  };
+  const stopAmbient = useCallback(() => {
+    if (!soundsRef.current) return;
+    safeStop(soundsRef.current.ambient);
+  }, []);
+
+  const stopAll = useCallback(() => {
+    if (!soundsRef.current) return;
+    safeStop(soundsRef.current.ambient);
+  }, []);
+
+  return { play, stopAmbient, stopAll };
 }

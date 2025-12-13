@@ -6,7 +6,8 @@ import { useState, useEffect, useRef } from "react";
 import { Howl } from "howler";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
-import { TerminalText } from "@/components/ui/TerminalText"; // Ensure this path is correct
+import { TerminalText } from "@/components/ui/TerminalText";
+import { useSilentSplinePreloader } from "@/hooks/useSplinePreloader";
 
 // --- DATA CONSTANTS ---
 const SYSTEM_LOGS = [
@@ -39,6 +40,7 @@ const BRIEFING_ITEMS = [
   },
 ];
 
+
 export function LandingClient() {
   const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
@@ -46,9 +48,30 @@ export function LandingClient() {
   const [isAudioOn, setIsAudioOn] = useState(false);
   const soundRef = useRef<Howl | null>(null);
 
+  const PARTICLE_COUNT = 32;
+  // Store particles in state to avoid reading ref during render
+  const [particles, setParticles] = useState<{height: string, width: string, left: string, opacity: number, duration: number, delay: number}[]>([]);
+
+  useEffect(() => {
+    if (particles.length !== PARTICLE_COUNT) {
+      setTimeout(() => {
+        setParticles(Array.from({ length: PARTICLE_COUNT }).map(() => ({
+          height: `${Math.random() * 0.7 + 0.5}rem`,
+          width: `${Math.random() * 0.7 + 0.5}rem`,
+          left: `${Math.random() * 100}%`,
+          opacity: 0.7 + Math.random() * 0.3,
+          duration: 8 + Math.random() * 12,
+          delay: Math.random() * 6,
+        })));
+      }, 0);
+    }
+    // No dependencies: only run once on mount
+    // eslint-disable-next-line
+  }, []);
+
   // --- AUDIO & TIME LOGIC (UNCHANGED) ---
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => setMounted(true), 0);
     const updateTime = () => {
       const now = new Date();
       // Malaysia Time is UTC+8
@@ -65,21 +88,21 @@ export function LandingClient() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const saved = localStorage.getItem("cssc_audio_on");
-    if (saved === "1") setIsAudioOn(true);
+    if (saved === "1") setTimeout(() => setIsAudioOn(true), 0);
   }, []);
 
   useEffect(() => {
     if (!mounted) return;
     if (!soundRef.current) {
       soundRef.current = new Howl({
-        src: ["/audio/backgroun_music.mp3"], // Ensure path is correct
+        src: ["/audio/backgroun_music.mp3"], // Landing page music
         loop: true,
         volume: 0.22,
         preload: true,
         html5: true,
         mute: true,
       });
-      try { soundRef.current.play(); } catch (e) {}
+      try { soundRef.current.play(); } catch {} // ignore error
     }
     const howl = soundRef.current;
     if (isAudioOn) {
@@ -102,24 +125,24 @@ export function LandingClient() {
       
       {/* 1. BACKGROUND LAYERS */}
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black pointer-events-none" />
+      <div className="absolute inset-0 bg-linear-to-b from-black via-transparent to-black pointer-events-none" />
       
       {/* Floating Particles: More green rising dots for advanced effect */}
       <div className="fixed inset-0 pointer-events-none">
-        {mounted && Array.from({ length: 32 }).map((_, i) => (
+        {mounted && particles.map((particle, i) => (
           <motion.div
             key={i}
             className="absolute rounded-full bg-cyber-green"
             style={{
-              height: `${Math.random() * 0.7 + 0.5}rem`,
-              width: `${Math.random() * 0.7 + 0.5}rem`,
-              left: `${Math.random() * 100}%`,
-              opacity: 0.7 + Math.random() * 0.3,
+              height: particle.height,
+              width: particle.width,
+              left: particle.left,
+              opacity: particle.opacity,
               filter: 'blur(0.5px)'
             }}
             initial={{ y: '110vh', opacity: 0 }}
             animate={{ y: '-10vh', opacity: [0, 0.7, 0] }}
-            transition={{ duration: 8 + Math.random() * 12, repeat: Infinity, delay: Math.random() * 6, ease: 'linear' }}
+            transition={{ duration: particle.duration, repeat: Infinity, delay: particle.delay, ease: 'linear' }}
           />
         ))}
       </div>
@@ -188,7 +211,7 @@ export function LandingClient() {
                   <span className="animate-pulse text-cyber-green">&#9654;</span> Tue. 16/12/2025
                 </span>
                  WE NEED <br/>
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-green to-emerald-600">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-cyber-green to-emerald-600">
                   MINDSETS
                 </span>
               </h1>
@@ -245,7 +268,7 @@ export function LandingClient() {
 
               {/* Console Logs */}
               <div className="space-y-2 font-mono text-xs text-emerald-100 mb-6 h-24 overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent z-10" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/85 to-transparent z-10" />
                 {SYSTEM_LOGS.map((log, i) => (
                   <p key={i} className="opacity-70 whitespace-nowrap overflow-x-auto">{"> "}{log}</p>
                 ))}
@@ -321,7 +344,7 @@ export function LandingClient() {
               {/* Modal Body */}
               <div className="p-4 sm:p-6 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 overflow-y-auto flex-1 min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {BRIEFING_ITEMS.map((item, i) => (
-                  <div key={i} className="group rounded border border-white/5 bg-white/[0.02] p-3 sm:p-4 transition-colors hover:border-cyber-green/30 hover:bg-cyber-green/[0.05]">
+                  <div key={i} className="group rounded border border-white/5 bg-white/2 p-3 sm:p-4 transition-colors hover:border-cyber-green/30 hover:bg-cyber-green/5">
                     <div className="mb-2 text-2xl">{item.icon}</div>
                     <h4 className="mb-1 font-bold text-zinc-200">{item.title}</h4>
                     <p className="text-xs leading-relaxed text-zinc-400">{item.desc}</p>

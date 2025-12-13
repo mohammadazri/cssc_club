@@ -1,6 +1,5 @@
-import { QuizEngine } from "@/components/QuizEngine";
+import { MissionLoader } from "@/components/MissionLoader";
 import { QUESTIONS } from "@/data/questions";
-import Link from "next/link";
 
 export const metadata = {
   title: "Mission · Zero-Day Recruit",
@@ -10,8 +9,7 @@ export const metadata = {
 export default function MissionPage() {
   return (
     <main className="min-h-screen">
-
-      <QuizEngine questions={QUESTIONS} />
+      <MissionLoader questions={QUESTIONS} />
     </main>
   );
 }

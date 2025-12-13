@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Howl } from "howler";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 
@@ -209,18 +210,64 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
   const [trapOpen, setTrapOpen] = useState(false);
   const [trapTitle, setTrapTitle] = useState("Trap Triggered");
   const [trapMessage, setTrapMessage] = useState("");
-  const [timeLeft, setTimeLeft] = useState(TIME_PER_QUESTION);
+  const [timeLeft, setTimeLeft] = useState(() => TIME_PER_QUESTION);
   const [justEarned, setJustEarned] = useState<number | null>(null);
   const [shaking, setShaking] = useState(false);
 
   const [audioEnabled, setAudioEnabled] = useState(false);
   const sfx = useSoundEffects(audioEnabled);
 
+    // Background music handled locally to avoid restarting and to control lifecycle
+    const bgRef = useRef<Howl | null>(null);
+    // Initialize Howl once
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      if (!bgRef.current) {
+        bgRef.current = new Howl({
+          src: ["/audio/quiz_bg.mp3"],
+          loop: false, // manual loop
+          volume: 0.18,
+          preload: true,
+          html5: true,
+          mute: true,
+        });
+        bgRef.current.on("end", () => {
+          if (bgRef.current && audioEnabled) {
+            try {
+              bgRef.current.seek(0);
+              bgRef.current.play();
+            } catch {}
+          }
+        });
+        try { bgRef.current.play(); } catch {}
+      }
+
+      return () => {
+        bgRef.current?.unload();
+        bgRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Toggle mute/play without recreating Howl
+    useEffect(() => {
+      const howl = bgRef.current;
+      if (!howl) return;
+      if (audioEnabled) {
+        try { if (!howl.playing()) howl.play(); } catch {}
+        try { howl.mute(false); } catch {}
+        try { howl.fade(0, 0.18, 800); } catch {}
+      } else {
+        try { howl.fade(0.18, 0, 500); } catch {}
+        setTimeout(() => { try { howl.mute(true); } catch {} }, 500);
+      }
+    }, [audioEnabled]);
+
   const q = questions[idx];
   const total = questions.length;
   const isCriticalTime = timeLeft <= CRITICAL_TIME;
 
-  // Reset timer when question changes
+  // Reset timer whenever the question index changes
   useEffect(() => {
     setTimeLeft(TIME_PER_QUESTION);
   }, [idx]);
@@ -341,7 +388,7 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
       <div className="flex flex-col gap-3 p-3 sm:hidden">
         <div className="flex items-center justify-between">
           <ProgressBar current={idx} total={total} />
-          <CountdownTimer seconds={timeLeft} isCritical={isCriticalTime} />
+          <CountdownTimer key={idx} seconds={timeLeft} isCritical={isCriticalTime} />
         </div>
         <div className="flex items-center justify-between">
           <ThreatLevel difficulty={q.difficulty} />
@@ -350,9 +397,9 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
             <ScoreDisplay score={score} justEarned={justEarned} />
             <button
               onClick={() => {
-                sfx.play("click");
-                setAudioEnabled(!audioEnabled);
-              }}
+                  sfx.play("click", true);
+                  setAudioEnabled(!audioEnabled);
+                }}
               className={clsx(
                 "flex h-7 w-7 items-center justify-center rounded-md border transition-all text-sm",
                 audioEnabled 
@@ -381,7 +428,7 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
           
           <button
             onClick={() => {
-              sfx.play("click");
+              sfx.play("click", true);
               setAudioEnabled(!audioEnabled);
             }}
             className={clsx(
@@ -397,7 +444,7 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
         </div>
       </div>
     </motion.div>
-  ), [audioEnabled, health, idx, isCriticalTime, justEarned, q.difficulty, score, timeLeft, total]);
+  ), [audioEnabled, health, idx, isCriticalTime, justEarned, q.difficulty, score, timeLeft, total, sfx]);
 
   return (
     <div 
@@ -413,13 +460,28 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
 
       {/* Abort Button */}
       <div className="relative mb-4 flex justify-end">
-        <Link
-          href="/"
-          onClick={() => sfx.play("click")}
-          className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-zinc-200 hover:bg-white/10"
+        <motion.div
+          whileHover={{ scale: 1.03, x: -2 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ type: "spring", stiffness: 280, damping: 18 }}
         >
-          Abort
-        </Link>
+          <Link
+            href="/"
+            onClick={() => sfx.play("click")}
+            className="group relative flex items-center gap-2 rounded-lg border border-alert-red/50 bg-alert-red/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-alert-red shadow-[0_0_22px_rgba(255,34,68,0.25)] hover:border-alert-red hover:bg-alert-red/15"
+          >
+            <span className="text-sm">✕</span>
+            <span className="relative">
+              Abort
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 translate-x-[2px] translate-y-[1px] text-alert-red/50 blur-[1px] opacity-0 transition-opacity duration-150 group-hover:opacity-60"
+              >
+                Abort
+              </span>
+            </span>
+          </Link>
+        </motion.div>
       </div>
 
       <TrapOverlay

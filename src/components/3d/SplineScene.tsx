@@ -1,8 +1,11 @@
 "use client";
 
-import Spline from "@splinetool/react-spline";
+import dynamic from "next/dynamic";
 import { clsx } from "clsx";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+
+// Dynamically import the Spline runtime to avoid loading heavy JS during initial render
+const Spline = dynamic(() => import("@splinetool/react-spline"), { ssr: false });
 
 function placeholderLabel(sceneName: string) {
   return `${sceneName} scene not configured`;
@@ -87,6 +90,18 @@ export function SplineScene({
   const looksLikeSplineCode = normalizedUrl.endsWith("/scene.splinecode");
   const enabled = Boolean(normalizedUrl) && looksLikeSplineCode && !failed;
 
+  // Delay mounting the heavy Spline component slightly to ensure UI interactivity
+  const [mountSpline, setMountSpline] = useState(false);
+  useEffect(() => {
+    if (!enabled) return;
+    const t = window.requestAnimationFrame
+      ? window.requestAnimationFrame(() => setMountSpline(true))
+      : setTimeout(() => setMountSpline(true), 120);
+    return () => {
+      if (typeof t === "number" && window.cancelAnimationFrame) window.cancelAnimationFrame(t as number);
+    };
+  }, [enabled]);
+
   const fallback = useMemo(() => {
     return (
       <div
@@ -131,11 +146,21 @@ export function SplineScene({
         className,
       )}
     >
-      <Spline
-        scene={normalizedUrl}
-        onError={() => setFailed(true)}
-        className="h-full w-full"
-      />
+      {mountSpline ? (
+        <Spline
+          scene={
+            // Prefer blob URL cached in memory by preloader for fastest load
+            (typeof window !== "undefined" && (window as any).__splineSceneBlobs && (window as any).__splineSceneBlobs[normalizedUrl])
+              ? (window as any).__splineSceneBlobs[normalizedUrl]
+              : normalizedUrl
+          }
+          onError={() => setFailed(true)}
+          className="h-full w-full"
+        />
+      ) : (
+        // Keep showing the fallback visuals while Spline loads
+        fallback
+      )}
     </div>
   );
 }
