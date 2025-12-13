@@ -10,8 +10,9 @@ import { Shield, Target, Zap, RefreshCw, Home, ExternalLink, Lock, Unlock, Termi
 // --- CONFIGURATION ---
 // Fallback links if env vars are missing
 const FALLBACK_LINKS = {
-  join: "https://chat.whatsapp.com/YOUR_CODE", // Replace with actual fallback
-  discord: "https://discord.gg/YOUR_CODE",
+  whatsapp: "https://chat.whatsapp.com/Iq8fIHUHYph32JjXxTOsBY",
+  instagram: "https://www.instagram.com/cssc_miit?igsh=aDRyNmdkcmRmcjdh",
+  linkedin: "https://www.linkedin.com/company/uniklmiitcssc/",
 };
 
 // --- COMPONENTS ---
@@ -64,11 +65,14 @@ export function DebriefClient() {
     setHydrated(true);
   }, []);
 
-  const joinUrl = process.env.NEXT_PUBLIC_CLUB_JOIN_FORM_URL || FALLBACK_LINKS.join;
-  const discordUrl = process.env.NEXT_PUBLIC_CLUB_DISCORD_URL || FALLBACK_LINKS.discord;
-  
-  // Generate QR Code URL
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(joinUrl)}&color=00ff88&bgcolor=05100a&margin=10`;
+  const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || process.env.NEXT_PUBLIC_CLUB_JOIN_FORM_URL || FALLBACK_LINKS.whatsapp;
+  const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL || FALLBACK_LINKS.instagram;
+  const linkedinUrl = process.env.NEXT_PUBLIC_LINKEDIN_URL || FALLBACK_LINKS.linkedin;
+
+  // QR target state and URL
+  const [qrTarget, setQrTarget] = useState<"whatsapp" | "instagram" | "linkedin">("whatsapp");
+  const qrTargetUrl = qrTarget === "whatsapp" ? whatsappUrl : qrTarget === "instagram" ? instagramUrl : linkedinUrl;
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrTargetUrl)}&color=00ff88&bgcolor=05100a&margin=10`;
 
   const score = lastRun?.score || 0;
   const health = lastRun?.healthRemaining || 0;
@@ -95,7 +99,7 @@ export function DebriefClient() {
         )} />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 sm:py-12 flex flex-col gap-8">
+      <div className="relative z-10 w-full px-4 py-8 sm:py-12 flex flex-col gap-8">
         
         {/* HEADER */}
         <header className="text-center space-y-4">
@@ -177,6 +181,40 @@ export function DebriefClient() {
                 <p className="text-zinc-500 text-xs">Scan to join the network</p>
               </div>
 
+              {/* QR Target Switcher */}
+              <div className="flex items-center justify-center gap-2 mb-3">
+                <button
+                  type="button"
+                  onClick={() => setQrTarget("whatsapp")}
+                  className={clsx(
+                    "px-3 py-1 rounded-full text-xs font-semibold",
+                    qrTarget === "whatsapp" ? "bg-cyber-green text-black" : "bg-white/5 text-zinc-300"
+                  )}
+                >
+                  WhatsApp
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrTarget("instagram")}
+                  className={clsx(
+                    "px-3 py-1 rounded-full text-xs font-semibold",
+                    qrTarget === "instagram" ? "bg-pink-500 text-white" : "bg-white/5 text-zinc-300"
+                  )}
+                >
+                  Instagram
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrTarget("linkedin")}
+                  className={clsx(
+                    "px-3 py-1 rounded-full text-xs font-semibold",
+                    qrTarget === "linkedin" ? "bg-blue-600 text-white" : "bg-white/5 text-zinc-300"
+                  )}
+                >
+                  LinkedIn
+                </button>
+              </div>
+
               {/* QR Code Container */}
               <div className="relative p-3 bg-white rounded-lg shadow-[0_0_40px_rgba(0,255,136,0.15)] transition-transform group-hover:scale-105 duration-500">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -193,22 +231,34 @@ export function DebriefClient() {
               </div>
 
               <div className="mt-8 w-full space-y-3">
-                <a 
-                  href={joinUrl} 
-                  target="_blank" 
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 bg-cyber-green text-black font-bold rounded-lg hover:bg-cyber-green/90 transition-all hover:shadow-[0_0_20px_rgba(0,255,136,0.4)]"
                 >
                   <span>Join CSSC Club</span>
                   <ExternalLink className="w-4 h-4" />
                 </a>
-                <a 
-                  href={discordUrl} 
-                  target="_blank" 
-                  className="flex items-center justify-center gap-2 w-full py-3 bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 font-bold rounded-lg hover:bg-indigo-600/30 transition-all"
-                >
-                  <span>Discord Community</span>
-                  <ExternalLink className="w-4 h-4" />
-                </a>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <a
+                    href={instagramUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-pink-600/10 text-pink-400 border border-pink-500/20 font-bold rounded-lg hover:bg-pink-600/20 transition-all"
+                  >
+                    Instagram
+                  </a>
+                  <a
+                    href={linkedinUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 bg-blue-900/10 text-blue-300 border border-blue-500/20 font-bold rounded-lg hover:bg-blue-900/20 transition-all"
+                  >
+                    LinkedIn
+                  </a>
+                </div>
               </div>
 
             </div>
