@@ -2,7 +2,7 @@
 
 :root {
   --background: #0a0f1a;
-  --foreground: #e8eaf0;
+  --foreground: #d8f6ff;
   --void-black: #0a0f1a;
   --surface: #111827;
   --surface-light: #1f2937;
@@ -28,8 +28,8 @@
   --color-alert-red-dim: var(--alert-red-dim);
   --color-warning-amber: var(--warning-amber);
   --color-panel: var(--panel);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans), "Space Grotesk", system-ui, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", "Fira Code", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -44,12 +44,28 @@
    ══════════════════════════════════════════════════════════════════════════ */
 body {
   background:
-    radial-gradient(ellipse at 20% 0%, rgba(0, 255, 136, 0.06), transparent 55%),
-    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.04), transparent 50%),
-    radial-gradient(ellipse at 50% 50%, rgba(17, 24, 39, 0.6), transparent 70%),
-    linear-gradient(180deg, #0a0f1a 0%, #111827 50%, #0a0f1a 100%);
+    /* Hacker grid overlay */
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 255, 136, 0.04) 0,
+      rgba(0, 255, 136, 0.04) 1px,
+      transparent 1px,
+      transparent 80px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 136, 0.03) 0,
+      rgba(0, 255, 136, 0.03) 1px,
+      transparent 1px,
+      transparent 80px
+    ),
+    radial-gradient(ellipse at 20% 0%, rgba(0, 255, 136, 0.09), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.08), transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(26, 42, 75, 0.55), transparent 72%),
+    linear-gradient(160deg, #0a1224 0%, #0d1b33 40%, #0a1427 70%, #0c1f3a 100%);
   color: var(--foreground);
   font-family: var(--font-sans);
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.08);
   overflow-x: hidden;
   min-height: 100vh;
 }
