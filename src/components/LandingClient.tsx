@@ -104,15 +104,22 @@ export function LandingClient() {
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black pointer-events-none" />
       
-      {/* Floating Particles */}
+      {/* Floating Particles: More green rising dots for advanced effect */}
       <div className="fixed inset-0 pointer-events-none">
-        {mounted && Array.from({ length: 15 }).map((_, i) => (
+        {mounted && Array.from({ length: 32 }).map((_, i) => (
           <motion.div
             key={i}
-            className="absolute h-0.5 w-0.5 rounded-full bg-cyber-green"
-            initial={{ x: Math.random() * 100 + "vw", y: "100vh", opacity: 0 }}
-            animate={{ y: "-10vh", opacity: [0, 0.5, 0] }}
-            transition={{ duration: 10 + Math.random() * 15, repeat: Infinity, delay: Math.random() * 5, ease: "linear" }}
+            className="absolute rounded-full bg-cyber-green"
+            style={{
+              height: `${Math.random() * 0.7 + 0.5}rem`,
+              width: `${Math.random() * 0.7 + 0.5}rem`,
+              left: `${Math.random() * 100}%`,
+              opacity: 0.7 + Math.random() * 0.3,
+              filter: 'blur(0.5px)'
+            }}
+            initial={{ y: '110vh', opacity: 0 }}
+            animate={{ y: '-10vh', opacity: [0, 0.7, 0] }}
+            transition={{ duration: 8 + Math.random() * 12, repeat: Infinity, delay: Math.random() * 6, ease: 'linear' }}
           />
         ))}
       </div>
@@ -176,9 +183,11 @@ export function LandingClient() {
                 <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-white">Clearance Level: Public</span>
               </div>
               
-              <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tighter text-white mb-6 leading-[0.9]">
-                <span className="block text-white text-2xl sm:text-3xl font-mono tracking-normal mb-2 font-normal">Tue. 16/12/2025</span>
-                WE NEED <br/>
+              <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tighter text-white mb-6 leading-[0.9] relative">
+                <span className="block text-white text-2xl sm:text-3xl font-mono tracking-normal mb-2 font-normal">
+                  <span className="animate-pulse text-cyber-green">&#9654;</span> Tue. 16/12/2025
+                </span>
+                 WE NEED <br/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyber-green to-emerald-600">
                   MINDSETS
                 </span>
