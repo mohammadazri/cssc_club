@@ -12,6 +12,14 @@ export function MissionEntry() {
   const [numQuestions, setNumQuestions] = useState<number>(5);
   const [loading, setLoading] = useState(false);
   const [pulse, setPulse] = useState(false);
+  // derived slider styling values
+  const maxRange = Math.min(20, availableQuestions ? availableQuestions.length : 20);
+  const sliderPct = (() => {
+    const min = 5;
+    const denom = Math.max(1, maxRange - min);
+    return Math.round(((numQuestions - min) / denom) * 100);
+  })();
+  const accent = level === "easy" ? "#10b981" : level === "medium" ? "#f59e0b" : level === "hard" ? "#ef4444" : "#94a3b8";
 
   async function choose(l: "easy" | "medium" | "hard") {
     setLevel(l);
@@ -94,6 +102,10 @@ export function MissionEntry() {
         .matrix-rain { position: absolute; inset: 0; pointer-events: none; opacity: 0.06; background-image: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.04) 100%), repeating-linear-gradient(180deg, rgba(0,0,0,0.02) 0 1px, transparent 1px 12px); mix-blend-mode: overlay; }
         .matrix-rows { position: absolute; inset: 0; background-image: radial-gradient(rgba(16,185,129,0.02) 1px, transparent 1px); background-size: 8px 8px; transform: translateY(-100%); animation: rain 12s linear infinite; }
         .digit-flicker { transition: color 160ms linear, box-shadow 220ms ease; }
+        .cursor-blink { display:inline-block; width:10px; height:20px; margin-left:6px; background:transparent; border-left:2px solid rgba(16,185,129,0.9); animation: blink 900ms steps(2,end) infinite; vertical-align:middle }
+        @keyframes blink { 0%,50% { opacity:1 } 51%,100% { opacity:0 } }
+        .title-terminal { letter-spacing:1px; }
+        .title-glow { text-shadow: 0 4px 28px rgba(16,185,129,0.06), 0 0 8px rgba(16,185,129,0.06); }
       `}</style>
 
       <div className="absolute inset-0 pointer-events-none">
@@ -103,7 +115,11 @@ export function MissionEntry() {
         <div style={{position:'absolute', left:0,right:0,top:'-40%',height:'200%', background:'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0))', animation:'scan 4s linear infinite'}} />
       </div>
 
-      <h1 className="mb-6 text-2xl sm:text-3xl md:text-4xl text-center font-bold font-mono tracking-wider hacker-title">Choose YOUR MODE</h1>
+      <h1 className="mb-6 text-2xl sm:text-3xl md:text-4xl text-center font-bold font-mono tracking-wider title-terminal">
+        <span className="title-glow">CSSC CLUB —</span>
+        <span className="ml-2 text-emerald-300">QUIZ</span>
+        <span className="cursor-blink" aria-hidden />
+      </h1>
       <div className="absolute inset-0 matrix-rain"><div className="matrix-rows" /></div>
 
       <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:gap-4 z-10 w-full max-w-3xl">
@@ -193,8 +209,9 @@ export function MissionEntry() {
                 onChange={(e) => setNumQuestions(Number(e.target.value))}
                 className="h-2 w-full sm:w-48 accent-emerald-400"
                 title="Select number of questions"
+                style={{ background: `linear-gradient(90deg, ${accent} ${sliderPct}%, rgba(255,255,255,0.06) ${sliderPct}%)` }}
               />
-              <div className="ml-0 sm:ml-2 w-12 rounded bg-white/5 px-2 py-1 text-center text-sm font-medium">{numQuestions}</div>
+              <div className={clsx("ml-0 sm:ml-2 w-12 rounded bg-white/5 px-2 py-1 text-center text-sm font-medium digit-flicker", pulse && "pulse-glow")}>{numQuestions}</div>
             </div>
 
             <div className="mb-4 text-xs text-slate-500">Questions will be selected randomly and kept hidden—focus on the mission, not the answers.</div>

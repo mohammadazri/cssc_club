@@ -38,20 +38,37 @@ function StatBox({ label, value, icon: Icon, color = "text-white" }: { label: st
 }
 
 function RankBadge({ rank, score }: { rank: string; score: number }) {
-  const isElite = score > 800;
+  // determine visual tier from rank name
+  const tier = rank.includes("Cyber")
+    ? "elite"
+    : rank.includes("Net") || rank.includes("Security")
+      ? "high"
+      : rank.includes("Script") || rank.includes("Incident")
+        ? "mid"
+        : rank === "Operative"
+          ? "operational"
+          : "initiate";
+
+  const rootClass = clsx(
+    "relative w-full aspect-square max-w-[200px] mx-auto rounded-full flex items-center justify-center border-4",
+    tier === "elite" && "rank-elite",
+    tier === "high" && "rank-high",
+    tier === "mid" && "rank-mid",
+    tier === "operational" && "rank-op",
+    tier === "initiate" && "rank-init"
+  );
+
+  const iconClass = clsx("w-12 h-12 mx-auto mb-2", tier === "elite" ? "text-cyber-green" : tier === "high" ? "text-amber-300" : tier === "mid" ? "text-sky-400" : "text-zinc-400");
+
   return (
-    <div className={clsx(
-      "relative w-full aspect-square max-w-[200px] mx-auto rounded-full flex items-center justify-center border-4",
-      isElite ? "border-cyber-green/50 bg-cyber-green/5" : "border-zinc-700 bg-zinc-900/50"
-    )}>
-      <div className={clsx(
-        "absolute inset-0 rounded-full animate-spin-slow border-t-2 border-transparent",
-        isElite ? "border-t-cyber-green" : "border-t-zinc-500"
-      )} />
+    <div className={rootClass} aria-label={`Rank ${rank}`}>
+      <div className={clsx("absolute inset-0 rounded-full animate-spin-slow border-t-2 border-transparent", tier === "elite" ? "border-t-cyber-green" : tier === "high" ? "border-t-amber-300" : "border-t-zinc-500")} />
       <div className="text-center z-10">
-        <Shield className={clsx("w-12 h-12 mx-auto mb-2", isElite ? "text-cyber-green" : "text-zinc-500")} />
+        <Shield className={iconClass} />
         <p className="text-[10px] uppercase tracking-widest text-zinc-500">Rank Assigned</p>
-        <p className={clsx("text-xl font-bold uppercase", isElite ? "text-cyber-green" : "text-white")}>{rank}</p>
+        <p className={clsx("text-xl font-bold uppercase", tier === "elite" ? "text-cyber-green" : tier === "high" ? "text-amber-300" : tier === "mid" ? "text-sky-400" : "text-white")}>
+          {rank}
+        </p>
       </div>
     </div>
   );
@@ -79,11 +96,33 @@ export function DebriefClient() {
   const isSuccess = (lastRun?.outcome || "failed") === "success";
   const accuracy = lastRun ? Math.round((lastRun.correctCount / lastRun.totalCount) * 100) : 0;
 
-  const rank = useMemo(() => {
-    if (score > 800) return "Cyber Sentinel";
-    if (score > 500) return "Net Defender";
-    return "Initiate";
-  }, [score]);
+  // Average points earned per question (helps infer difficulty mix)
+  const avgPoints = lastRun && lastRun.totalCount > 0 ? score / lastRun.totalCount : 0;
+
+  const { rank, subtitle } = useMemo(() => {
+    // rank logic that accounts for accuracy and avgPoints so short easy runs can still earn high rank
+    if (!lastRun) return { rank: "Initiate", subtitle: "No data" };
+
+    if (accuracy === 100) {
+      if (avgPoints >= 230) return { rank: "Cyber Sentinel", subtitle: "Flawless & high-difficulty performance" };
+      if (avgPoints >= 150) return { rank: "Net Defender", subtitle: "Perfect accuracy on challenging tasks" };
+      return { rank: "Script Prodigy", subtitle: "Perfect accuracy — solid fundamentals" };
+    }
+
+    if (accuracy >= 85) {
+      if (avgPoints >= 200) return { rank: "Security Specialist", subtitle: "Strong accuracy on tough scenarios" };
+      if (avgPoints >= 140) return { rank: "Incident Responder", subtitle: "High accuracy and solid skill" };
+      return { rank: "Tactical Analyst", subtitle: "Good accuracy — keep sharpening skills" };
+    }
+
+    if (accuracy >= 60) {
+      return { rank: "Operative", subtitle: "Adequate performance — room to improve" };
+    }
+
+    return { rank: "Initiate", subtitle: "Learn the basics and try again" };
+  }, [lastRun, accuracy, avgPoints, score]);
+
+  const isEliteVisual = rank === "Cyber Sentinel" || rank === "Security Specialist" || rank === "Net Defender";
 
   if (!hydrated) return null;
 
@@ -133,13 +172,23 @@ export function DebriefClient() {
             {/* Rank Card */}
             <div className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 backdrop-blur-md">
               <RankBadge rank={rank} score={score} />
-              <div className="text-center sm:text-left space-y-2">
-                <p className="text-xs text-zinc-500 uppercase tracking-widest">Operative Status</p>
-                <h2 className="text-3xl font-bold text-white">{rank}</h2>
-                <p className="text-sm text-zinc-400">
-                  ID: <span className="font-mono text-zinc-300">{lastRun?.runId.slice(0,8).toUpperCase()}</span>
-                </p>
-              </div>
+                <div className="text-center sm:text-left space-y-2">
+                  {isEliteVisual && (
+                    <div className="pointer-events-none absolute inset-0 flex items-start justify-center">
+                      <div className="confetti" aria-hidden>
+                        {Array.from({ length: 18 }).map((_, i) => (
+                          <span key={i} style={{ ["--i" as any]: i / 18, left: `${10 + (80 * (i / 18))}%` }} />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <p className="text-xs text-zinc-500 uppercase tracking-widest">Operative Status</p>
+                  <h2 className="text-3xl font-bold text-white">{rank}</h2>
+                  <p className="text-sm text-zinc-400">{subtitle}</p>
+                  <p className="text-sm text-zinc-400">
+                    ID: <span className="font-mono text-zinc-300">{lastRun?.runId.slice(0,8).toUpperCase()}</span>
+                  </p>
+                </div>
             </div>
 
             {/* Stats Grid */}
@@ -282,6 +331,43 @@ export function DebriefClient() {
         }
         .animate-spin-slow {
           animation: spin 8s linear infinite;
+        }
+        .confetti { position: absolute; inset: 0; pointer-events: none; overflow: visible }
+        .confetti span { position: absolute; width:8px; height:14px; border-radius:2px; opacity:0.95; transform-origin:center; animation: confetti-fall 1200ms linear forwards; }
+        @keyframes confetti-fall {
+          0% { transform: translateY(-10%) rotate(0deg) scale(1); opacity:1 }
+          100% { transform: translateY(140%) rotate(360deg) scale(0.9); opacity:0 }
+        }
+        .confetti span:nth-child(odd) { background: linear-gradient(180deg,#00ff88,#00cc66) }
+        .confetti span:nth-child(even) { background: linear-gradient(180deg,#ffd86b,#ff9f1c) }
+        .confetti span { left: calc(10% + (80% * var(--i))); top: -8%; animation-delay: calc(var(--i) * 60ms); }
+        @keyframes rankPulse {
+          0% { transform: scale(1); box-shadow: 0 0 0 rgba(0,0,0,0); }
+          50% { transform: scale(1.02); box-shadow: 0 0 28px rgba(0,255,136,0.08); }
+          100% { transform: scale(1); box-shadow: 0 0 0 rgba(0,0,0,0); }
+        }
+        .rank-elite {
+          border-color: rgba(0,255,136,0.18);
+          background: radial-gradient(ellipse at center, rgba(0,255,136,0.04), rgba(0,0,0,0));
+          box-shadow: 0 8px 40px rgba(0,255,136,0.04);
+          animation: rankPulse 2.8s ease-in-out infinite;
+        }
+        .rank-high {
+          border-color: rgba(255,184,28,0.18);
+          background: radial-gradient(ellipse at center, rgba(255,184,28,0.03), rgba(0,0,0,0));
+          box-shadow: 0 6px 28px rgba(255,184,28,0.04);
+        }
+        .rank-mid {
+          border-color: rgba(56,189,248,0.12);
+          background: radial-gradient(ellipse at center, rgba(56,189,248,0.02), rgba(0,0,0,0));
+        }
+        .rank-op {
+          border-color: rgba(120,120,120,0.12);
+          background: radial-gradient(ellipse at center, rgba(255,255,255,0.01), rgba(0,0,0,0));
+        }
+        .rank-init {
+          border-color: rgba(80,80,80,0.08);
+          background: none;
         }
       `}</style>
     </div>
