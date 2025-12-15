@@ -20,23 +20,23 @@ const SYSTEM_LOGS = [
 const BRIEFING_ITEMS = [
   { 
     title: "Threat Identification", 
-    desc: "9 interactive scenarios. Spot the phishing, malware, and social engineering attempts.", 
-    icon: "👁️" 
+    desc: "Interactive scenarios with randomized questions per mission — spot phishing, malware, and social engineering.", 
+    icon: "visibility" 
   },
   { 
     title: "Zero-Trust Protocol", 
-    desc: "You have 3 Lives. One wrong click triggers the lockdown mechanism.", 
-    icon: "🛡️" 
+    desc: "Default: 3 lives (configurable). One wrong click may trigger mission lockdown.", 
+    icon: "security" 
   },
   { 
     title: "Time Critical", 
-    desc: "45 seconds per node. Hackers don't wait for you to think.", 
-    icon: "⏱️" 
+    desc: "Default: 45s per question (configurable). Speed and accuracy both matter.", 
+    icon: "timer" 
   },
   { 
     title: "Psychological Warfare", 
-    desc: "The test isn't just technical. It tests your ability to remain calm under pressure.", 
-    icon: "🧠" 
+    desc: "Beyond technical skills — remain calm and intentional under pressure.", 
+    icon: "psychology" 
   },
 ];
 
@@ -89,6 +89,19 @@ export function LandingClient() {
     if (typeof window === "undefined") return;
     const saved = localStorage.getItem("cssc_audio_on");
     if (saved === "1") setTimeout(() => setIsAudioOn(true), 0);
+  }, []);
+
+  // Load Material Symbols font for professional icons (only once)
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const id = 'material-symbols-stylesheet';
+    if (!document.getElementById(id)) {
+      const link = document.createElement('link');
+      link.id = id;
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0';
+      document.head.appendChild(link);
+    }
   }, []);
 
   useEffect(() => {
@@ -345,7 +358,9 @@ export function LandingClient() {
               <div className="p-4 sm:p-6 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 overflow-y-auto flex-1 min-h-0" style={{ WebkitOverflowScrolling: 'touch' }}>
                 {BRIEFING_ITEMS.map((item, i) => (
                   <div key={i} className="group rounded border border-white/5 bg-white/2 p-3 sm:p-4 transition-colors hover:border-cyber-green/30 hover:bg-cyber-green/5">
-                    <div className="mb-2 text-2xl">{item.icon}</div>
+                    <div className="mb-2 text-2xl text-cyber-green">
+                      <span className="material-symbols-outlined" aria-hidden>{item.icon}</span>
+                    </div>
                     <h4 className="mb-1 font-bold text-zinc-200">{item.title}</h4>
                     <p className="text-xs leading-relaxed text-zinc-400">{item.desc}</p>
                   </div>

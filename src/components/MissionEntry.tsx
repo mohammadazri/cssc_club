@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { MissionLoader } from "@/components/MissionLoader";
 import type { Question } from "@/types/quiz";
@@ -12,6 +12,10 @@ export function MissionEntry() {
   const [numQuestions, setNumQuestions] = useState<number>(5);
   const [loading, setLoading] = useState(false);
   const [pulse, setPulse] = useState(false);
+  const [questionTime, setQuestionTime] = useState<number>(45);
+  const [allowedErrors, setAllowedErrors] = useState<number>(3);
+  const [showErrorsMenu, setShowErrorsMenu] = useState(false);
+  const errorsMenuRef = useRef<HTMLDivElement | null>(null);
   // derived slider styling values
   const maxRange = Math.min(20, availableQuestions ? availableQuestions.length : 20);
   const sliderPct = (() => {
@@ -69,8 +73,28 @@ export function MissionEntry() {
     return () => clearTimeout(t);
   }, [numQuestions]);
 
+  // close errors menu when clicking outside or pressing Escape
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (!showErrorsMenu) return;
+      if (!errorsMenuRef.current) return;
+      if (!errorsMenuRef.current.contains(e.target as Node)) {
+        setShowErrorsMenu(false);
+      }
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setShowErrorsMenu(false);
+    }
+    document.addEventListener("click", onDocClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onDocClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [showErrorsMenu]);
+
   if (questions) {
-    return <MissionLoader questions={questions} />;
+    return <MissionLoader questions={questions} timePerQuestion={questionTime} maxHealth={allowedErrors} />;
   }
 
   const bgClass = level === "easy"
@@ -82,10 +106,13 @@ export function MissionEntry() {
         : "from-slate-900 via-slate-950 to-black";
 
   return (
-    <div className={clsx(
-      "relative overflow-hidden min-h-screen flex flex-col items-center justify-center px-6 py-12 transition-colors duration-700",
-      `bg-gradient-to-br ${bgClass}`
-    )}>
+    <div
+      style={{ "--accent": accent } as React.CSSProperties}
+      className={clsx(
+        "relative overflow-hidden min-h-screen flex flex-col items-center justify-center px-6 py-12 transition-colors duration-700 font-mono text-slate-200",
+        `bg-gradient-to-br ${bgClass}`
+      )}
+    >
       <style>{`
         @keyframes scan { 0% { transform: translateY(-100%); opacity: 0 } 10% { opacity: .12 } 50% { opacity: .02 } 100% { transform: translateY(100%); opacity: 0 } }
         @keyframes titleShift { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
@@ -115,11 +142,12 @@ export function MissionEntry() {
         <div style={{position:'absolute', left:0,right:0,top:'-40%',height:'200%', background:'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0))', animation:'scan 4s linear infinite'}} />
       </div>
 
-      <h1 className="mb-6 text-2xl sm:text-3xl md:text-4xl text-center font-bold font-mono tracking-wider title-terminal">
+      <h1 className="mb-1 text-3xl sm:text-4xl md:text-5xl text-center font-bold tracking-wide title-terminal">
         <span className="title-glow">CSSC CLUB —</span>
         <span className="ml-2 text-emerald-300">QUIZ</span>
         <span className="cursor-blink" aria-hidden />
       </h1>
+      <p className="mb-6 text-center text-xs text-slate-400 max-w-xl">Select your loadout and ruleset — mission data will be randomized on launch.</p>
       <div className="absolute inset-0 matrix-rain"><div className="matrix-rows" /></div>
 
       <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:gap-4 z-10 w-full max-w-3xl">
@@ -127,12 +155,12 @@ export function MissionEntry() {
           aria-label="Choose ScriptKiddie (Easy)"
           onClick={() => choose("easy")}
           data-text="ScriptKiddie"
-          className={clsx(
-            "group relative flex w-full sm:w-40 flex-1 items-center gap-3 rounded-lg border px-4 py-3 transition-transform hover:scale-105",
-            level === "easy"
-              ? "border-emerald-400 bg-gradient-to-b from-emerald-600/10 to-black/30 ring-2 ring-emerald-400 glitch"
-              : "border-slate-700 bg-white/3"
-          )}
+            className={clsx(
+              "group relative flex w-full sm:w-40 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform hover:scale-105 min-h-[56px]",
+              level === "easy"
+                ? "border-emerald-400 bg-gradient-to-b from-emerald-600/8 to-black/20 ring-2 ring-emerald-400 glitch"
+                : "border-slate-700 bg-white/3"
+            )}
         >
           <svg className="h-6 w-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
@@ -148,12 +176,12 @@ export function MissionEntry() {
           aria-label="Choose Hacker (Medium)"
           onClick={() => choose("medium")}
           data-text="Hacker"
-          className={clsx(
-            "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-lg border px-4 py-3 transition-transform hover:scale-105",
-            level === "medium"
-              ? "border-amber-400 bg-gradient-to-b from-amber-600/10 to-black/30 ring-2 ring-amber-400 glitch"
-              : "border-slate-700 bg-white/3"
-          )}
+            className={clsx(
+              "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform hover:scale-105 min-h-[56px]",
+              level === "medium"
+                ? "border-amber-400 bg-gradient-to-b from-amber-600/8 to-black/20 ring-2 ring-amber-400 glitch"
+                : "border-slate-700 bg-white/3"
+            )}
         >
           <svg className="h-6 w-6 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z" />
@@ -168,12 +196,12 @@ export function MissionEntry() {
           aria-label="Choose Elite (Hard)"
           onClick={() => choose("hard")}
           data-text="Elite"
-          className={clsx(
-            "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-lg border px-4 py-3 transition-transform hover:scale-105",
-            level === "hard"
-              ? "border-red-500 bg-gradient-to-b from-red-600/10 to-black/30 ring-2 ring-red-500 glitch"
-              : "border-slate-700 bg-white/3"
-          )}
+            className={clsx(
+              "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform hover:scale-105 min-h-[56px]",
+              level === "hard"
+                ? "border-red-500 bg-gradient-to-b from-red-600/8 to-black/20 ring-2 ring-red-500 glitch"
+                : "border-slate-700 bg-white/3"
+            )}
         >
           <svg className="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" d="M12 2c1.657 0 3 1.343 3 3v1h3v3h-3v1a3 3 0 11-6 0V9H6V6h3V5c0-1.657 1.343-3 3-3z" />
@@ -189,7 +217,7 @@ export function MissionEntry() {
 
       {availableQuestions ? (
         <div className="mt-6 w-full max-w-3xl z-10 px-2">
-          <div className="relative overflow-hidden rounded-lg border border-slate-700 bg-black/40 p-4 sm:p-6 backdrop-blur-sm">
+          <div className="relative overflow-hidden rounded-xl border border-slate-700 bg-black/40 p-4 sm:p-6 backdrop-blur-sm shadow-xl/10">
             <div className="pointer-events-none absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5" />
             <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
@@ -216,6 +244,56 @@ export function MissionEntry() {
 
             <div className="mb-4 text-xs text-slate-500">Questions will be selected randomly and kept hidden—focus on the mission, not the answers.</div>
 
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                <label className="text-xs text-slate-400 w-28" htmlFor="timePerQ">Time / Q</label>
+                <div className="flex items-center gap-2">
+                  {[15, 30, 45, 60].map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setQuestionTime(t)}
+                      className={clsx(
+                        "rounded px-2 py-1 text-sm",
+                        questionTime === t ? "bg-emerald-500 text-black" : "bg-white/5 text-white/60"
+                      )}
+                    >
+                      {t}s
+                    </button>
+                  ))}
+
+                  <input
+                    id="timePerQ"
+                    aria-label="Custom time per question"
+                    type="number"
+                    min={5}
+                    max={300}
+                    value={questionTime}
+                    onChange={(e) => setQuestionTime(Number(e.target.value))}
+                    className="w-20 rounded bg-white/5 px-2 py-1 text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-slate-400 w-28" htmlFor="allowedErrors">Allowed Errors</label>
+                <select
+                  id="allowedErrors"
+                  aria-label="Allowed errors before exit"
+                  value={allowedErrors}
+                  onChange={(e) => setAllowedErrors(Number(e.target.value))}
+                  className="rounded bg-zinc-900/80 text-white px-2 py-1 text-sm w-full sm:w-40 border border-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value={0}>Infinite</option>
+                  <option value={1}>1</option>
+                  <option value={2}>2</option>
+                  <option value={3}>3</option>
+                  <option value={4}>4</option>
+                  <option value={5}>5</option>
+                </select>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row items-center sm:items-end justify-end gap-2">
               <button
                 onClick={() => setAvailableQuestions(null)}
@@ -227,8 +305,10 @@ export function MissionEntry() {
                 onClick={startMission}
                 disabled={availableQuestions.length < 5 || numQuestions < 5}
                 className={clsx(
-                  "rounded px-4 py-2 font-semibold w-full sm:w-auto",
-                  availableQuestions.length >= 5 && numQuestions >= 5 ? "bg-emerald-500 text-black" : "bg-white/5 text-white/40 cursor-not-allowed"
+                  "rounded px-4 py-2 font-semibold w-full sm:w-auto transition-transform focus:outline-none focus:ring-2 focus:ring-offset-2",
+                  availableQuestions.length >= 5 && numQuestions >= 5
+                    ? "bg-emerald-500 text-black hover:scale-105 focus:ring-emerald-300"
+                    : "bg-white/5 text-white/40 cursor-not-allowed"
                 )}
               >
                 Launch Mission

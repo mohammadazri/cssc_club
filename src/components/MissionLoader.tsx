@@ -5,7 +5,7 @@ import { QuizEngine } from "@/components/QuizEngine";
 import type { Question } from "@/types/quiz";
 import { motion } from "framer-motion";
 
-export function MissionLoader({ questions }: { questions: Question[] }) {
+export function MissionLoader({ questions, timePerQuestion, maxHealth }: { questions: Question[]; timePerQuestion?: number; maxHealth?: number }) {
   const { status, progress, loadedCount, totalCount } = useSplinePreloader();
 
   // Show loading screen while preloading
@@ -92,5 +92,5 @@ export function MissionLoader({ questions }: { questions: Question[] }) {
   }
 
   // Ready or error - show the quiz (fallback visuals will show if scenes failed)
-  return <QuizEngine questions={questions} />;
+  return <QuizEngine questions={questions} timePerQuestion={timePerQuestion} maxHealth={maxHealth} />;
 }

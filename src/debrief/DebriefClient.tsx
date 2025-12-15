@@ -27,7 +27,7 @@ function GlitchText({ text, className }: { text: string; className?: string }) {
   );
 }
 
-function StatBox({ label, value, icon: Icon, color = "text-white" }: { label: string; value: string | number; icon: any; color?: string }) {
+function StatBox({ label, value, icon: Icon, color = "text-white" }: { label: string; value: string | number; icon: React.ComponentType<{ className?: string }>; color?: string }) {
   return (
     <div className="flex flex-col items-center justify-center p-4 rounded-xl bg-white/5 border border-white/10 backdrop-blur-sm">
       <Icon className={clsx("w-5 h-5 mb-2 opacity-80", color)} />
@@ -79,7 +79,11 @@ export function DebriefClient() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setHydrated(true);
+    // Defer setting hydrated to avoid synchronous setState inside effect
+    // which can cause cascading renders. Using a timeout schedules it
+    // after the current render frame.
+    const id = setTimeout(() => setHydrated(true), 0);
+    return () => clearTimeout(id);
   }, []);
 
   const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || process.env.NEXT_PUBLIC_CLUB_JOIN_FORM_URL || FALLBACK_LINKS.whatsapp;
@@ -177,7 +181,7 @@ export function DebriefClient() {
                     <div className="pointer-events-none absolute inset-0 flex items-start justify-center">
                       <div className="confetti" aria-hidden>
                         {Array.from({ length: 18 }).map((_, i) => (
-                          <span key={i} style={{ ["--i" as any]: i / 18, left: `${10 + (80 * (i / 18))}%` }} />
+                          <span key={i} style={{ ["--i"]: i / 18, left: `${10 + (80 * (i / 18))}%` } as React.CSSProperties} />
                         ))}
                       </div>
                     </div>

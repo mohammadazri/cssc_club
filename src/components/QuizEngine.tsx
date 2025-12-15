@@ -19,9 +19,9 @@ import { MainframeScene } from "@/components/3d/MainframeScene";
 /* ══════════════════════════════════════════════════════════════════════════
    PSYCHOLOGY-DRIVEN CONSTANTS
    ══════════════════════════════════════════════════════════════════════════ */
-const TIME_PER_QUESTION = 45; // seconds - creates urgency
+const TIME_PER_QUESTION = 45; // seconds - default
 const CRITICAL_TIME = 10; // seconds - triggers anxiety pulse
-const MAX_HEALTH = 3;
+const MAX_HEALTH = 3; // default
 
 function pointsForDifficulty(difficulty: Question["difficulty"]) {
   switch (difficulty) {
@@ -55,6 +55,19 @@ function Scene({ sceneId }: { sceneId: SceneId }) {
    HEALTH DISPLAY - Loss Aversion Psychology
    ══════════════════════════════════════════════════════════════════════════ */
 function HealthDisplay({ current, max }: { current: number; max: number }) {
+  // If max is 0 we treat it as unlimited/infinite lives
+  if (max === 0) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="mr-1 text-xs uppercase tracking-wider text-zinc-500">SYS</span>
+        <div className="flex items-center gap-1 rounded px-2 py-1 bg-white/5 text-sm text-cyber-green">
+          <span className="font-mono">∞</span>
+          <span className="text-xs text-zinc-400">unlimited</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center gap-1.5">
       <span className="mr-1 text-xs uppercase tracking-wider text-zinc-500">SYS</span>
@@ -190,7 +203,7 @@ function ThreatLevel({ difficulty }: { difficulty: Question["difficulty"] }) {
 /* ══════════════════════════════════════════════════════════════════════════
    MAIN QUIZ ENGINE
    ══════════════════════════════════════════════════════════════════════════ */
-export function QuizEngine({ questions }: { questions: Question[] }) {
+export function QuizEngine({ questions, timePerQuestion = TIME_PER_QUESTION, maxHealth = MAX_HEALTH }: { questions: Question[]; timePerQuestion?: number; maxHealth?: number }) {
   const router = useRouter();
   const { saveRun } = useGamePersistence();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -230,14 +243,15 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
   }, [questions, runId]);
 
   const [idx, setIdx] = useState(0);
-  const [health, setHealth] = useState(MAX_HEALTH);
+  const unlimited = maxHealth === 0;
+  const [health, setHealth] = useState(() => (unlimited ? Infinity : maxHealth));
   const [score, setScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [locked, setLocked] = useState(false);
   const [trapOpen, setTrapOpen] = useState(false);
   const [trapTitle, setTrapTitle] = useState("Trap Triggered");
   const [trapMessage, setTrapMessage] = useState("");
-  const [timeLeft, setTimeLeft] = useState(() => TIME_PER_QUESTION);
+  const [timeLeft, setTimeLeft] = useState(() => timePerQuestion);
   const [justEarned, setJustEarned] = useState<number | null>(null);
   const [shaking, setShaking] = useState(false);
 
@@ -296,8 +310,8 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
 
   // Reset timer whenever the question index changes
   useEffect(() => {
-    setTimeLeft(TIME_PER_QUESTION);
-  }, [idx]);
+    setTimeLeft(timePerQuestion);
+  }, [idx, timePerQuestion]);
 
   const finish = useCallback((outcome: RunSummary["outcome"], nextHealth: number, nextScore: number, nextCorrect: number) => {
     const finishedAtIso = new Date().toISOString();
@@ -420,7 +434,7 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
         <div className="flex items-center justify-between">
           <ThreatLevel difficulty={q.difficulty} />
           <div className="flex items-center gap-3">
-            <HealthDisplay current={health} max={MAX_HEALTH} />
+            <HealthDisplay current={health} max={maxHealth} />
             <ScoreDisplay score={score} justEarned={justEarned} />
             <button
               onClick={() => {
@@ -448,9 +462,9 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
           <ThreatLevel difficulty={q.difficulty} />
         </div>
         
-        <div className="flex items-center gap-4 lg:gap-6">
+          <div className="flex items-center gap-4 lg:gap-6">
           <CountdownTimer seconds={timeLeft} isCritical={isCriticalTime} />
-          <HealthDisplay current={health} max={MAX_HEALTH} />
+          <HealthDisplay current={health} max={maxHealth} />
           <ScoreDisplay score={score} justEarned={justEarned} />
           
           <button
