@@ -241,7 +241,7 @@ export function QuizEngine({ questions }: { questions: Question[] }) {
   const [justEarned, setJustEarned] = useState<number | null>(null);
   const [shaking, setShaking] = useState(false);
 
-  const [audioEnabled, setAudioEnabled] = useState(false);
+  const [audioEnabled, setAudioEnabled] = useState(true);
   const sfx = useSoundEffects(audioEnabled);
 
     // Background music handled locally to avoid restarting and to control lifecycle
