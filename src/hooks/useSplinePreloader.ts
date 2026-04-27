@@ -13,15 +13,22 @@ const CACHE_NAME = "spline-scenes-v1";
 // Get all Spline scene URLs from environment
 function getSplineUrls(): string[] {
   const urls: string[] = [];
-  
-  const vault = process.env.NEXT_PUBLIC_SPLINE_VAULT_SCENE;
-  const phishing = process.env.NEXT_PUBLIC_SPLINE_PHISHING_SCENE;
-  const mainframe = process.env.NEXT_PUBLIC_SPLINE_MAINFRAME_SCENE;
-  
-  if (vault?.endsWith("/scene.splinecode")) urls.push(vault);
-  if (phishing?.endsWith("/scene.splinecode")) urls.push(phishing);
-  if (mainframe?.endsWith("/scene.splinecode")) urls.push(mainframe);
-  
+
+  const candidates = [
+    process.env.NEXT_PUBLIC_SPLINE_VAULT_SCENE,
+    process.env.NEXT_PUBLIC_SPLINE_PHISHING_SCENE,
+    process.env.NEXT_PUBLIC_SPLINE_MAINFRAME_SCENE,
+    // V3 additions
+    process.env.NEXT_PUBLIC_SPLINE_EASY_BG_SCENE,
+    process.env.NEXT_PUBLIC_SPLINE_MEDIUM_BG_SCENE,
+    process.env.NEXT_PUBLIC_SPLINE_HARD_BG_SCENE,
+    process.env.NEXT_PUBLIC_SPLINE_DASHBOARD_SCENE,
+  ];
+
+  for (const url of candidates) {
+    if (url?.endsWith("/scene.splinecode")) urls.push(url);
+  }
+
   return urls;
 }
 

@@ -3,6 +3,8 @@
 import { useCallback, useState } from "react";
 
 import type { RunSummary } from "@/types/quiz";
+import { loadSession } from "@/lib/session";
+import { insertRun } from "@/lib/supabase/queries";
 
 const LAST_RUN_KEY = "zdr:lastRun";
 const LEADERBOARD_KEY = "zdr:leaderboard";
@@ -47,11 +49,14 @@ export function useGamePersistence() {
           window.localStorage.getItem(LEADERBOARD_KEY),
         ) ?? [];
 
-      const next = [...current, {
-        runId: summary.runId,
-        finishedAtIso: summary.finishedAtIso,
-        score: summary.score,
-      }]
+      const next = [
+        ...current,
+        {
+          runId: summary.runId,
+          finishedAtIso: summary.finishedAtIso,
+          score: summary.score,
+        },
+      ]
         .sort((a, b) => b.score - a.score)
         .slice(0, 10);
 
@@ -59,6 +64,12 @@ export function useGamePersistence() {
       setLeaderboard(next);
     } catch {
       // Ignore storage errors.
+    }
+
+    // Fire-and-forget Supabase write — never blocks game navigation
+    const session = loadSession();
+    if (session?.playerId) {
+      insertRun(summary, session.playerId).catch(() => {});
     }
   }, []);
 

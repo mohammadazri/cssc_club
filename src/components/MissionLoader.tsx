@@ -2,23 +2,32 @@
 
 import { useSplinePreloader } from "@/hooks/useSplinePreloader";
 import { QuizEngine } from "@/components/QuizEngine";
-import type { Question } from "@/types/quiz";
+import type { Difficulty, Question } from "@/types/quiz";
 import { motion } from "framer-motion";
 
-export function MissionLoader({ questions, timePerQuestion, maxHealth }: { questions: Question[]; timePerQuestion?: number; maxHealth?: number }) {
+export function MissionLoader({
+  questions,
+  timePerQuestion,
+  maxHealth,
+  username,
+  difficulty,
+}: {
+  questions: Question[];
+  timePerQuestion?: number;
+  maxHealth?: number;
+  username?: string;
+  difficulty?: Difficulty;
+}) {
   const { status, progress, loadedCount, totalCount } = useSplinePreloader();
 
-  // Show loading screen while preloading
   if (status === "loading" || status === "idle") {
     return (
       <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950">
-        {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black" />
         <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')]" />
         <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.02)_1px,transparent_1px)] bg-size-[32px_32px]" />
 
         <div className="relative z-10 flex flex-col items-center gap-8 px-6 text-center">
-          {/* Logo/Icon */}
           <motion.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -48,7 +57,6 @@ export function MissionLoader({ questions, timePerQuestion, maxHealth }: { quest
             </motion.p>
           </div>
 
-          {/* Progress bar */}
           <motion.div
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -64,14 +72,11 @@ export function MissionLoader({ questions, timePerQuestion, maxHealth }: { quest
               />
             </div>
             <div className="flex justify-between text-xs font-mono text-slate-500">
-              <span>
-                {loadedCount}/{totalCount} assets
-              </span>
+              <span>{loadedCount}/{totalCount} assets</span>
               <span>{progress}%</span>
             </div>
           </motion.div>
 
-          {/* Loading dots */}
           <div className="flex gap-1.5">
             {[0, 1, 2].map((i) => (
               <motion.div
@@ -91,6 +96,13 @@ export function MissionLoader({ questions, timePerQuestion, maxHealth }: { quest
     );
   }
 
-  // Ready or error - show the quiz (fallback visuals will show if scenes failed)
-  return <QuizEngine questions={questions} timePerQuestion={timePerQuestion} maxHealth={maxHealth} />;
+  return (
+    <QuizEngine
+      questions={questions}
+      timePerQuestion={timePerQuestion}
+      maxHealth={maxHealth}
+      username={username}
+      difficulty={difficulty}
+    />
+  );
 }

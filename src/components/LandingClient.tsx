@@ -251,12 +251,20 @@ export function LandingClient() {
                 <div className="absolute inset-0 -translate-x-full group-hover:translate-x-0 bg-white/20 skew-x-12 transition-transform duration-500" />
               </Link>
               
-              <button 
+              <button
                 onClick={() => setBriefingModal(true)}
                 className="px-8 py-4 rounded border border-white/20 text-white font-medium hover:bg-white/5 hover:border-white/40 transition-all uppercase tracking-widest text-xs w-full sm:w-auto"
               >
                 Mission Data
               </button>
+
+              <Link
+                href="/dashboard"
+                className="px-8 py-4 rounded border border-cyber-green/30 text-cyber-green font-medium hover:bg-cyber-green/10 hover:border-cyber-green/60 transition-all uppercase tracking-widest text-xs w-full sm:w-auto text-center flex items-center justify-center gap-2"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-cyber-green animate-pulse" />
+                Live Dashboard
+              </Link>
             </motion.div>
           </div>
 

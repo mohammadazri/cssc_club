@@ -77,13 +77,29 @@ function RankBadge({ rank, score }: { rank: string; score: number }) {
 export function DebriefClient() {
   const { lastRun } = useGamePersistence();
   const [hydrated, setHydrated] = useState(false);
+  const [unlockToast, setUnlockToast] = useState<"Hacker" | "Elite" | null>(null);
 
   useEffect(() => {
-    // Defer setting hydrated to avoid synchronous setState inside effect
-    // which can cause cascading renders. Using a timeout schedules it
-    // after the current render frame.
     const id = setTimeout(() => setHydrated(true), 0);
     return () => clearTimeout(id);
+  }, []);
+
+  // Check for new unlock eligibility after a run
+  useEffect(() => {
+    if (!lastRun) return;
+    async function checkUnlock() {
+      const { checkUnlockEligibility, grantUnlock } = await import("@/lib/unlocks");
+      const { loadSession } = await import("@/lib/session");
+      const session = loadSession();
+      if (!session) return;
+      const toUnlock = checkUnlockEligibility(lastRun!);
+      if (!toUnlock) return;
+      await grantUnlock(session.playerId, toUnlock);
+      setUnlockToast(toUnlock);
+      setTimeout(() => setUnlockToast(null), 4000);
+    }
+    checkUnlock();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const whatsappUrl = process.env.NEXT_PUBLIC_WHATSAPP_URL || process.env.NEXT_PUBLIC_CLUB_JOIN_FORM_URL || FALLBACK_LINKS.whatsapp;
@@ -132,6 +148,17 @@ export function DebriefClient() {
 
   return (
     <div className="min-h-screen w-full bg-[#050505] text-zinc-100 font-mono selection:bg-cyber-green/30 selection:text-black overflow-x-hidden">
+      {/* Unlock toast */}
+      {unlockToast && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="fixed top-4 left-1/2 z-50 -translate-x-1/2 rounded-xl border border-cyber-green/40 bg-cyber-green/10 px-6 py-3 text-sm font-bold text-cyber-green backdrop-blur-sm shadow-[0_0_30px_rgba(0,255,136,0.15)]"
+        >
+          🔓 {unlockToast} tier unlocked! Check Mission Select.
+        </motion.div>
+      )}
       
       {/* BACKGROUND EFFECTS */}
       <div className="fixed inset-0 pointer-events-none">
@@ -187,6 +214,9 @@ export function DebriefClient() {
                     </div>
                   )}
                   <p className="text-xs text-zinc-500 uppercase tracking-widest">Operative Status</p>
+                  {lastRun?.username && (
+                    <p className="text-sm font-mono text-cyber-green">@{lastRun.username}</p>
+                  )}
                   <h2 className="text-3xl font-bold text-white">{rank}</h2>
                   <p className="text-sm text-zinc-400">{subtitle}</p>
                   <p className="text-sm text-zinc-400">
@@ -211,6 +241,10 @@ export function DebriefClient() {
               <Link href="/" className="flex items-center justify-center gap-2 p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all group">
                 <Home className="w-4 h-4 text-zinc-400 group-hover:text-white transition-colors" />
                 <span className="text-sm font-bold text-zinc-300 group-hover:text-white">Return Home</span>
+              </Link>
+              <Link href="/dashboard" className="col-span-2 flex items-center justify-center gap-2 p-4 rounded-xl bg-cyber-green/5 border border-cyber-green/20 hover:bg-cyber-green/10 hover:border-cyber-green/40 transition-all group">
+                <span className="h-2 w-2 rounded-full bg-cyber-green animate-pulse" />
+                <span className="text-sm font-bold text-cyber-green">Live Dashboard</span>
               </Link>
             </div>
           </motion.div>

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniKL MIIT CSSC Club Poster</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Sci-Fi/Tech Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap');
+
+        :root {
+            --bg-dark: #020412;
+            --text-blue: #00ddee;
+            
+            /* TikTok Neon */
+            --tik-cyan: #00f2ea;
+            --tik-pink: #ff0050;
+
+            /* LinkedIn Neon */
+            --li-blue: #0077b5;
+            --li-bright: #00a0dc;
+
+            /* WhatsApp Neon */
+            --wa-green: #25d366;
+            --wa-bright: #5ffc7b;
+
+            /* Instagram Neon */
+            --ig-purple: #833ab4;
+            --ig-pink: #fd1d1d;
+            --ig-orange: #f56040;
+        }
+
+        /* Ensure exact print colors */
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 210mm;
+            height: 297mm;
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden; /* Hide scrollbars for preview */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Circuit Board Background Pattern */
+            background-image: 
+                linear-gradient(rgba(5, 8, 25, 0.92), rgba(5, 8, 25, 0.96)),
+                url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M10 10 L30 10 L30 30 M70 10 L90 10 L90 30 M10 70 L10 90 L30 90 M90 70 L90 90 L70 90' fill='none' stroke='%232a3555' stroke-width='1'/%3E%3Cpath d='M40 0 L40 100 M0 40 L100 40 M60 0 L60 100 M0 60 L100 60' fill='none' stroke='%231a2345' stroke-width='0.5'/%3E%3Ccircle cx='30' cy='30' r='2' fill='%232a3555'/%3E%3Ccircle cx='70' cy='70' r='2' fill='%232a3555'/%3E%3C/svg%3E");
+            position: relative;
+        }
+
+        /* Add a subtle light flare at bottom right */
+        body::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            right: -100px;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(131, 58, 180, 0.4) 0%, transparent 70%);
+            filter: blur(50px);
+            z-index: 0;
+        }
+
+        /* ================= HEADER ================= */
+        header {
+            width: 100%;
+            padding: 15mm 10mm 5mm 10mm;
+            text-align: center;
+            z-index: 2;
+        }
+
+        .logos-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 15px;
+        }
+
+        /* Emulating the logos using text and icons */
+        .logo-block {
+            text-align: left;
+            line-height: 1.1;
+        }
+        .unikl-logo { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2rem; }
+        .unikl-logo span { color: #0099ff; } /* Blue accent for MIIT */
+        
+        .divider-vert { height: 50px; width: 2px; background: #334466; }
+
+        .cssc-logo { display: flex; align-items: center; gap: 10px; }
+        .chip-icon { font-size: 2.5rem; color: var(--text-blue); }
+        .cssc-text { font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 2rem; }
+        .cssc-text small { display: block; font-size: 0.7rem; letter-spacing: 1px; color: #aaaabb; font-family: 'Rajdhani', sans-serif; }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            margin: 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: white;
+            text-shadow: 0 0 10px rgba(0, 221, 238, 0.5);
+        }
+
+        .glowing-separator {
+            height: 3px;
+            width: 70%;
+            background: linear-gradient(90deg, transparent, var(--text-blue), transparent);
+            margin: 15px auto 30px auto;
+            box-shadow: 0 0 15px var(--text-blue);
+            border-radius: 50%;
+        }
+
+
+        /* ================= GRID LAYOUT ================= */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 25px;
+            width: 170mm; /* Controls width of the card area */
+            flex-grow: 1; /* Takes available vertical space */
+            padding: 10px;
+            z-index: 2;
+        }
+
+
+        /* ================= CARD STYLES ================= */
+        .card {
+            position: relative;
+            /* The complex tech shape made with clip-path */
+            clip-path: polygon(
+                20px 0, calc(100% - 20px) 0, 
+                100% 20px, 100% calc(100% - 20px), 
+                calc(100% - 20px) 100%, 20px 100%, 
+                0 calc(100% - 20px), 0 20px
+            );
+            background: rgba(10, 14, 30, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* The glowing border that sits behind the clipped shape */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: -1;
+            background: var(--card-border-color); /* Set by specific class */
+            /* Slightly larger than clipped area to create border */
+            clip-path: polygon(
+                20px 0, calc(100% - 20px) 0, 
+                100% 20px, 100% calc(100% - 20px), 
+                calc(100% - 20px) 100%, 20px 100%, 
+                0 calc(100% - 20px), 0 20px
+            );
+            filter: blur(2px); /* Softens the neon edge */
+        }
+
+        /* The inner dark background, slightly smaller, to reveal the border */
+        .card::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            z-index: -1;
+            background: rgba(10, 14, 30, 0.9);
+            clip-path: polygon(
+                19px 0, calc(100% - 19px) 0, 
+                100% 19px, 100% calc(100% - 19px), 
+                calc(100% - 19px) 100%, 19px 100%, 
+                0 calc(100% - 19px), 0 19px
+            );
+        }
+
+        /* QR Section */
+        .qr-frame-container {
+            position: relative;
+            width: 190px;
+            height: 190px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        /* The white square immediately around the QR */
+        .qr-bg {
+            background: white;
+            padding: 8px;
+            border-radius: 5px;
+            width: 170px;
+            height: 170px;
+        }
+        
+        .qr-bg img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            /* Ensure QR is black on white for readability */
+            filter: contrast(120%);
+            object-fit: contain;
+        }
+
+        /* The center icon overlay */
+        .center-icon {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px; height: 28px;
+            background: white;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 6px;
+            font-size: 16px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        /* URL Text */
+        .url-text {
+            font-family: 'Rajdhani', monospace;
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-decoration: none;
+            color: white;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 95%;
+        }
+
+        /* --- HUD Elements (Corners, Arrows, Vertical Text) --- */
+        .hud-corner {
+            position: absolute;
+            width: 25px; height: 25px;
+            border: 2px solid var(--hud-color);
+            box-shadow: 0 0 5px var(--hud-color);
+            opacity: 0.7;
+        }
+        .tl { top: 15px; left: 15px; border-right: none; border-bottom: none; }
+        .tr { top: 15px; right: 15px; border-left: none; border-bottom: none; }
+        .bl { bottom: 35px; left: 15px; border-right: none; border-top: none; }
+        .br { bottom: 35px; right: 15px; border-left: none; border-top: none; }
+
+        .vertical-text {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%) rotate(90deg);
+            font-size: 0.7rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: var(--hud-color);
+            text-shadow: 0 0 5px var(--hud-color);
+        }
+
+        .arrows-left {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1rem;
+            color: var(--hud-color);
+            text-shadow: 0 0 5px var(--hud-color);
+            display: flex; flex-direction: column;
+            line-height: 0.8;
+        }
+
+        /* ================= SPECIFIC CARD THEMES ================= */
+        
+        /* TikTok (Top Left) - Cyan/Pink Mix */
+        .card.tiktok {
+            --card-border-color: linear-gradient(135deg, var(--tik-cyan), var(--tik-pink));
+            --hud-color: var(--tik-cyan);
+        }
+        .tiktok .center-icon { color: black; /* TikTok icon is usually dark */ }
+
+        /* LinkedIn (Top Right) - Blue */
+        .card.linkedin {
+            --card-border-color: linear-gradient(135deg, var(--li-blue), var(--li-bright));
+            --hud-color: var(--li-bright);
+        }
+        .linkedin .center-icon { color: var(--li-blue); }
+
+        /* WhatsApp (Bottom Left) - Green */
+        .card.whatsapp {
+            --card-border-color: linear-gradient(135deg, var(--wa-green), var(--wa-bright));
+            --hud-color: var(--wa-bright);
+        }
+        .whatsapp .center-icon { color: var(--wa-green); }
+
+        /* Instagram (Bottom Right) - Purple/Pink */
+        .card.instagram {
+            --card-border-color: linear-gradient(135deg, var(--ig-purple), var(--ig-orange));
+            --hud-color: var(--ig-pink);
+        }
+        .instagram .center-icon {
+            background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+
+        /* ================= FOOTER ================= */
+        footer {
+            margin-bottom: 15mm;
+            text-align: center;
+            width: 90%;
+            z-index: 2;
+        }
+
+        .footer-frame {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .footer-line {
+            height: 2px;
+            flex-grow: 1;
+            background: linear-gradient(90deg, transparent, var(--text-blue), transparent);
+            box-shadow: 0 0 5px var(--text-blue);
+        }
+        .footer-dot { width: 6px; height: 6px; background: var(--text-blue); border-radius: 50%; box-shadow: 0 0 8px var(--text-blue); }
+
+        .footer-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: white;
+            text-shadow: 0 0 10px var(--text-blue);
+        }
+
+        .footer-sub {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: white;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logos-container">
+            <div class="logo-block unikl-logo">
+                UniKL<br><span>MIIT</span>
+            </div>
+            <div class="divider-vert"></div>
+            <div class="logo-block cssc-logo">
+                <i class="fas fa-microchip chip-icon"></i>
+                <div class="cssc-text">
+                    CSSC Club<br>
+                    <small>COMPUTER SCIENCE STUDENT CLUB</small>
+                </div>
+            </div>
+        </div>
+        <h1>Connect With Us - Advanced Digital Network</h1>
+        <div class="glowing-separator"></div>
+    </header>
+
+    <main class="main-grid">
+
+        <div class="card tiktok">
+            <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+            <div class="arrows-left"><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i></div>
+            <div class="vertical-text">SCAN TO JOIN</div>
+
+            <div class="qr-frame-container">
+                <div class="qr-bg">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.tiktok.com/@cssc_miit&color=000000&bgcolor=ffffff" alt="TikTok QR">
+                </div>
+                <div class="center-icon"><i class="fab fa-tiktok"></i></div>
+            </div>
+            <div class="url-text">https://www.tiktok.com/@cssc_miit</div>
+        </div>
+
+        <div class="card linkedin">
+             <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+            <div class="arrows-left"><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i></div>
+            <div class="vertical-text">FOLLOW US</div>
+
+            <div class="qr-frame-container">
+                <div class="qr-bg">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.linkedin.com/company/uniklmiitcssc/&color=000000&bgcolor=ffffff" alt="LinkedIn QR">
+                </div>
+                <div class="center-icon"><i class="fab fa-linkedin-in"></i></div>
+            </div>
+            <div class="url-text">https://www.linkedin.com/company/uniklmiitcssc/</div>
+        </div>
+
+        <div class="card whatsapp">
+             <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+            <div class="arrows-left"><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i></div>
+            <div class="vertical-text">WHATS APP</div>
+
+            <div class="qr-frame-container">
+                <div class="qr-bg">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://chat.whatsapp.com/Iq8fIHUHYph32JjXxTOsBY&color=000000&bgcolor=ffffff" alt="WhatsApp QR">
+                </div>
+                <div class="center-icon"><i class="fab fa-whatsapp"></i></div>
+            </div>
+            <div class="url-text">https://chat.whatsapp.com/Iq8fIHUHYph32JjXxTOsBY</div>
+        </div>
+
+        <div class="card instagram">
+             <div class="hud-corner tl"></div><div class="hud-corner tr"></div>
+            <div class="hud-corner bl"></div><div class="hud-corner br"></div>
+            <div class="arrows-left"><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i><i class="fas fa-chevron-right"></i></div>
+            <div class="vertical-text">FOLLOW US</div>
+
+            <div class="qr-frame-container">
+                <div class="qr-bg">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://www.instagram.com/cssc_miit&color=000000&bgcolor=ffffff" alt="Instagram QR">
+                </div>
+                <div class="center-icon"><i class="fab fa-instagram"></i></div>
+            </div>
+            <div class="url-text">https://www.instagram.com/cssc_miit</div>
+        </div>
+
+    </main>
+
+    <footer>
+        <div class="footer-frame">
+            <div class="footer-line"></div>
+            <div class="footer-dot"></div>
+            <div class="footer-title">UniKL MIIT</div>
+            <div class="footer-dot"></div>
+            <div class="footer-line"></div>
+        </div>
+        <div class="footer-sub">STAY UPDATED. GET INVOLVED.</div>
+    </footer>
+
+</body>
+</html>

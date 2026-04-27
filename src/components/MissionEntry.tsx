@@ -3,20 +3,33 @@
 import { useState, useEffect, useRef } from "react";
 import clsx from "clsx";
 import { MissionLoader } from "@/components/MissionLoader";
-import type { Question } from "@/types/quiz";
+import { UnlockBadge } from "@/components/UnlockBadge";
+import { DifficultyScene } from "@/components/3d/DifficultyScene";
+import { useUnlockProgress } from "@/hooks/useUnlockProgress";
+import type { Difficulty, Question } from "@/types/quiz";
 
-export function MissionEntry() {
+export function MissionEntry({
+  username = "",
+  playerId = null,
+}: {
+  username?: string;
+  playerId?: string | null;
+}) {
   const [level, setLevel] = useState<"easy" | "medium" | "hard" | null>(null);
   const [availableQuestions, setAvailableQuestions] = useState<Question[] | null>(null);
   const [questions, setQuestions] = useState<Question[] | null>(null);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null);
   const [numQuestions, setNumQuestions] = useState<number>(5);
   const [loading, setLoading] = useState(false);
   const [pulse, setPulse] = useState(false);
   const [questionTime, setQuestionTime] = useState<number>(45);
   const [allowedErrors, setAllowedErrors] = useState<number>(3);
   const [showErrorsMenu, setShowErrorsMenu] = useState(false);
+  const [lockedTooltip, setLockedTooltip] = useState<"medium" | "hard" | null>(null);
   const errorsMenuRef = useRef<HTMLDivElement | null>(null);
-  // derived slider styling values
+
+  const { unlocks, loaded: unlocksLoaded } = useUnlockProgress(playerId);
+
   const maxRange = Math.min(20, availableQuestions ? availableQuestions.length : 20);
   const sliderPct = (() => {
     const min = 5;
@@ -25,8 +38,26 @@ export function MissionEntry() {
   })();
   const accent = level === "easy" ? "#10b981" : level === "medium" ? "#f59e0b" : level === "hard" ? "#ef4444" : "#94a3b8";
 
+  const difficultyMap: Record<"easy" | "medium" | "hard", Difficulty> = {
+    easy: "ScriptKiddie",
+    medium: "Hacker",
+    hard: "Elite",
+  };
+
   async function choose(l: "easy" | "medium" | "hard") {
+    if (l === "medium" && unlocksLoaded && !unlocks.hackerUnlocked) {
+      setLockedTooltip("medium");
+      setTimeout(() => setLockedTooltip(null), 2500);
+      return;
+    }
+    if (l === "hard" && unlocksLoaded && !unlocks.eliteUnlocked) {
+      setLockedTooltip("hard");
+      setTimeout(() => setLockedTooltip(null), 2500);
+      return;
+    }
+
     setLevel(l);
+    setSelectedDifficulty(difficultyMap[l]);
     setLoading(true);
     try {
       if (l === "easy") {
@@ -40,9 +71,6 @@ export function MissionEntry() {
         setAvailableQuestions(mod.QUESTIONS_HARD);
       }
     } catch (err) {
-      // fallback: leave questions null (MissionLoader will not start)
-      // In dev you may want to console.error(err)
-      // eslint-disable-next-line no-console
       console.error("Failed to load questions for level", l, err);
     } finally {
       setLoading(false);
@@ -67,13 +95,11 @@ export function MissionEntry() {
   }
 
   useEffect(() => {
-    // animate pulse when number changes
     setPulse(true);
     const t = setTimeout(() => setPulse(false), 420);
     return () => clearTimeout(t);
   }, [numQuestions]);
 
-  // close errors menu when clicking outside or pressing Escape
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
       if (!showErrorsMenu) return;
@@ -93,8 +119,16 @@ export function MissionEntry() {
     };
   }, [showErrorsMenu]);
 
-  if (questions) {
-    return <MissionLoader questions={questions} timePerQuestion={questionTime} maxHealth={allowedErrors} />;
+  if (questions && selectedDifficulty) {
+    return (
+      <MissionLoader
+        questions={questions}
+        timePerQuestion={questionTime}
+        maxHealth={allowedErrors}
+        username={username}
+        difficulty={selectedDifficulty}
+      />
+    );
   }
 
   const bgClass = level === "easy"
@@ -105,6 +139,9 @@ export function MissionEntry() {
         ? "from-red-900 via-purple-900 to-black"
         : "from-slate-900 via-slate-950 to-black";
 
+  const isHackerLocked = unlocksLoaded && !unlocks.hackerUnlocked;
+  const isEliteLocked = unlocksLoaded && !unlocks.eliteUnlocked;
+
   return (
     <div
       style={{ "--accent": accent } as React.CSSProperties}
@@ -113,13 +150,19 @@ export function MissionEntry() {
         `bg-gradient-to-br ${bgClass}`
       )}
     >
+      {/* 3D background — rendered behind everything */}
+      {level && (
+        <div className="pointer-events-none absolute inset-0 opacity-30 z-0">
+          <DifficultyScene level={level} className="h-full w-full" />
+        </div>
+      )}
+
       <style>{`
         @keyframes scan { 0% { transform: translateY(-100%); opacity: 0 } 10% { opacity: .12 } 50% { opacity: .02 } 100% { transform: translateY(100%); opacity: 0 } }
         @keyframes titleShift { 0% { background-position: 0% 50% } 50% { background-position: 100% 50% } 100% { background-position: 0% 50% } }
         @keyframes pulseGlow { 0% { transform: scale(1); box-shadow: none } 50% { transform: scale(1.06); box-shadow: 0 0 24px rgba(16,185,129,0.12) } 100% { transform: scale(1); box-shadow: none } }
         @keyframes glitch1 { 0% { transform: translateX(0) } 20% { transform: translateX(-2px) } 40% { transform: translateX(1px) } 60% { transform: translateX(-1px) } 80% { transform: translateX(0) } 100% { transform: translateX(0) } }
         @keyframes rain { 0% { transform: translateY(-100%) } 100% { transform: translateY(100%) } }
-
         .hacker-title { background: linear-gradient(90deg, rgba(16,185,129,0.95), rgba(56,189,248,0.85), rgba(168,85,247,0.75)); background-size: 200% 200%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: titleShift 6s linear infinite; text-shadow: 0 2px 18px rgba(0,0,0,0.6); }
         .pulse-glow { animation: pulseGlow 420ms ease; }
         .glitch { position: relative; overflow: visible; }
@@ -135,32 +178,47 @@ export function MissionEntry() {
         .title-glow { text-shadow: 0 4px 28px rgba(16,185,129,0.06), 0 0 8px rgba(16,185,129,0.06); }
       `}</style>
 
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5" />
         <div className="absolute inset-0 bg-[linear-gradient(90deg, rgba(0,0,0,0.025) 1px, transparent 1px),linear-gradient(rgba(0,0,0,0.025) 1px, transparent 1px)] bg-size-[32px_32px] opacity-30" />
-        <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02))', mixBlendMode: 'overlay'}} />
         <div style={{position:'absolute', left:0,right:0,top:'-40%',height:'200%', background:'linear-gradient(180deg, rgba(255,255,255,0.05), rgba(0,0,0,0))', animation:'scan 4s linear infinite'}} />
       </div>
 
-      <h1 className="mb-1 text-3xl sm:text-4xl md:text-5xl text-center font-bold tracking-wide title-terminal">
-        <span className="title-glow">CSSC CLUB —</span>
-        <span className="ml-2 text-emerald-300">QUIZ</span>
-        <span className="cursor-blink" aria-hidden />
-      </h1>
-      <p className="mb-6 text-center text-xs text-slate-400 max-w-xl">Select your loadout and ruleset — mission data will be randomized on launch.</p>
-      <div className="absolute inset-0 matrix-rain"><div className="matrix-rows" /></div>
+      <div className="relative z-10 flex flex-col items-center w-full">
+        <h1 className="mb-1 text-3xl sm:text-4xl md:text-5xl text-center font-bold tracking-wide title-terminal">
+          <span className="title-glow">CSSC CLUB —</span>
+          <span className="ml-2 text-emerald-300">QUIZ</span>
+          <span className="cursor-blink" aria-hidden />
+        </h1>
+        {username && (
+          <p className="mb-2 text-center text-sm text-emerald-400 font-mono">
+            Operative: <span className="text-white font-bold">@{username}</span>
+          </p>
+        )}
+        <p className="mb-6 text-center text-xs text-slate-400 max-w-xl">Select your loadout and ruleset — mission data will be randomized on launch.</p>
+      </div>
+
+      <div className="absolute inset-0 matrix-rain z-0"><div className="matrix-rows" /></div>
+
+      {/* Locked tooltip */}
+      {lockedTooltip && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 rounded-lg border border-warning-amber/50 bg-warning-amber/10 px-4 py-2 text-xs text-warning-amber font-mono backdrop-blur-sm shadow-lg">
+          🔒 Complete {lockedTooltip === "medium" ? "ScriptKiddie" : "Hacker"} tier first to unlock
+        </div>
+      )}
 
       <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:gap-4 z-10 w-full max-w-3xl">
+        {/* Easy */}
         <button
           aria-label="Choose ScriptKiddie (Easy)"
           onClick={() => choose("easy")}
           data-text="ScriptKiddie"
-            className={clsx(
-              "group relative flex w-full sm:w-40 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform hover:scale-105 min-h-[56px]",
-              level === "easy"
-                ? "border-emerald-400 bg-gradient-to-b from-emerald-600/8 to-black/20 ring-2 ring-emerald-400 glitch"
-                : "border-slate-700 bg-white/3"
-            )}
+          className={clsx(
+            "group relative flex w-full sm:w-40 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform hover:scale-105 min-h-[56px]",
+            level === "easy"
+              ? "border-emerald-400 bg-gradient-to-b from-emerald-600/8 to-black/20 ring-2 ring-emerald-400 glitch"
+              : "border-slate-700 bg-white/3"
+          )}
         >
           <svg className="h-6 w-6 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" d="M12 6v6l4 2" />
@@ -172,43 +230,49 @@ export function MissionEntry() {
           </div>
         </button>
 
+        {/* Medium */}
         <button
           aria-label="Choose Hacker (Medium)"
           onClick={() => choose("medium")}
           data-text="Hacker"
-            className={clsx(
-              "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform hover:scale-105 min-h-[56px]",
-              level === "medium"
-                ? "border-amber-400 bg-gradient-to-b from-amber-600/8 to-black/20 ring-2 ring-amber-400 glitch"
-                : "border-slate-700 bg-white/3"
-            )}
+          className={clsx(
+            "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform min-h-[56px]",
+            isHackerLocked ? "opacity-60 cursor-not-allowed border-warning-amber/30" : "hover:scale-105",
+            level === "medium"
+              ? "border-amber-400 bg-gradient-to-b from-amber-600/8 to-black/20 ring-2 ring-amber-400 glitch"
+              : "border-slate-700 bg-white/3"
+          )}
         >
-          <svg className="h-6 w-6 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <UnlockBadge locked={isHackerLocked} />
+          <svg className={clsx("h-6 w-6", isHackerLocked ? "text-warning-amber/50" : "text-amber-400")} viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z" />
           </svg>
           <div className="text-left">
-            <div className="text-sm font-semibold text-white">Hacker</div>
-            <div className="text-xs text-slate-400">Infiltrate • Intermediate</div>
+            <div className={clsx("text-sm font-semibold", isHackerLocked ? "text-zinc-400" : "text-white")}>Hacker</div>
+            <div className="text-xs text-slate-400">{isHackerLocked ? "Locked" : "Infiltrate • Intermediate"}</div>
           </div>
         </button>
 
+        {/* Hard */}
         <button
           aria-label="Choose Elite (Hard)"
           onClick={() => choose("hard")}
           data-text="Elite"
-            className={clsx(
-              "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform hover:scale-105 min-h-[56px]",
-              level === "hard"
-                ? "border-red-500 bg-gradient-to-b from-red-600/8 to-black/20 ring-2 ring-red-500 glitch"
-                : "border-slate-700 bg-white/3"
-            )}
+          className={clsx(
+            "group relative flex w-full sm:w-44 flex-1 items-center gap-3 rounded-xl border px-4 py-3 transition-transform min-h-[56px]",
+            isEliteLocked ? "opacity-60 cursor-not-allowed border-alert-red/30" : "hover:scale-105",
+            level === "hard"
+              ? "border-red-500 bg-gradient-to-b from-red-600/8 to-black/20 ring-2 ring-red-500 glitch"
+              : "border-slate-700 bg-white/3"
+          )}
         >
-          <svg className="h-6 w-6 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <UnlockBadge locked={isEliteLocked} />
+          <svg className={clsx("h-6 w-6", isEliteLocked ? "text-alert-red/50" : "text-red-500")} viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" d="M12 2c1.657 0 3 1.343 3 3v1h3v3h-3v1a3 3 0 11-6 0V9H6V6h3V5c0-1.657 1.343-3 3-3z" />
           </svg>
           <div className="text-left">
-            <div className="text-sm font-semibold text-white">Elite</div>
-            <div className="text-xs text-slate-400">Exfiltrate • Advanced</div>
+            <div className={clsx("text-sm font-semibold", isEliteLocked ? "text-zinc-400" : "text-white")}>Elite</div>
+            <div className="text-xs text-slate-400">{isEliteLocked ? "Locked" : "Exfiltrate • Advanced"}</div>
           </div>
         </button>
       </div>
@@ -261,7 +325,6 @@ export function MissionEntry() {
                       {t}s
                     </button>
                   ))}
-
                   <input
                     id="timePerQ"
                     aria-label="Custom time per question"

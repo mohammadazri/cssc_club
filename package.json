@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@splinetool/react-spline": "^4.1.0",
+    "@supabase/supabase-js": "^2.104.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
     "howler": "^2.2.4",
