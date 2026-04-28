@@ -8,15 +8,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { TerminalText } from "@/components/ui/TerminalText";
 import { useSilentSplinePreloader } from "@/hooks/useSplinePreloader";
+import { SplineScene } from "@/components/3d/SplineScene";
 
 // --- DATA CONSTANTS ---
-const SYSTEM_LOGS = [
-  "Connection established...",
-  "Encryption: AES-256 [SECURE]",
-  "Fetching candidate profile...",
-  "STATUS: WAITING_FOR_INPUT",
-];
-
 const BRIEFING_ITEMS = [
   { 
     title: "Threat Identification", 
@@ -268,42 +262,47 @@ export function LandingClient() {
             </motion.div>
           </div>
 
-          {/* RIGHT: Status Monitor (The "Professional" Detail) */}
-          <motion.div 
+          {/* RIGHT: Nexbot Field Operative */}
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.4 }}
             className="hidden lg:block relative"
           >
-            {/* The "Card" is now a Data Terminal */}
-            <div className="relative rounded-lg border border-white/15 bg-zinc-900/80 backdrop-blur-md p-4 sm:p-6 w-full max-w-md ml-auto shadow-[0_20px_50px_rgba(0,0,0,0.55)] min-w-0">
-              <div className="absolute -top-1 -left-1 w-2 h-2 border-l border-t border-cyber-green" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 border-r border-t border-cyber-green" />
-              <div className="absolute -bottom-1 -left-1 w-2 h-2 border-l border-b border-cyber-green" />
-              <div className="absolute -bottom-1 -right-1 w-2 h-2 border-r border-b border-cyber-green" />
+            <div className="relative ml-auto h-[520px] w-full max-w-md overflow-hidden rounded-xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(0,255,136,0.05)]">
+              {/* Corner accents */}
+              <div className="pointer-events-none absolute left-2 top-2 z-10 h-6 w-6 border-l-2 border-t-2 border-cyber-green/50" />
+              <div className="pointer-events-none absolute right-2 top-2 z-10 h-6 w-6 border-r-2 border-t-2 border-cyber-green/50" />
+              <div className="pointer-events-none absolute bottom-2 left-2 z-10 h-6 w-6 border-b-2 border-l-2 border-cyber-green/50" />
+              <div className="pointer-events-none absolute bottom-2 right-2 z-10 h-6 w-6 border-b-2 border-r-2 border-cyber-green/50" />
 
-              <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-white/10 pb-2 gap-1 sm:gap-0">
-                <span className="text-xs font-mono text-white">SYS.MONITOR_V2.1</span>
-                <span className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-              </div>
-
-              {/* Console Logs */}
-              <div className="space-y-2 font-mono text-xs text-emerald-100 mb-6 h-24 overflow-hidden relative">
-                <div className="absolute inset-0 bg-linear-to-t from-black/85 to-transparent z-10" />
-                {SYSTEM_LOGS.map((log, i) => (
-                  <p key={i} className="opacity-70 whitespace-nowrap overflow-x-auto">{"> "}{log}</p>
-                ))}
-              </div>
-
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded bg-white/10 p-2 sm:p-3 border border-white/15">
-                  <div className="text-[10px] uppercase text-zinc-200">Latency</div>
-                  <div className="text-xl font-mono text-white">12<span className="text-xs text-zinc-300">ms</span></div>
+              {/* Top label */}
+              <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent px-5 py-4">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyber-green" />
+                  <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cyber-green/80">FIELD OPERATIVE — ONLINE</span>
                 </div>
-                <div className="rounded bg-white/10 p-2 sm:p-3 border border-white/15">
-                   <div className="text-[10px] uppercase text-zinc-200">Threat Level</div>
-                   <div className="text-xl font-mono text-orange-300">MED</div>
+                <span className="font-mono text-[9px] text-zinc-600">UNIT-01</span>
+              </div>
+
+              <SplineScene
+                sceneUrl="/models/nexbot_robot_character_concept.spline"
+                label="Field Operative"
+                fallbackVariant="vault"
+                className="h-full w-full"
+              />
+
+              {/* Bottom status */}
+              <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/90 to-transparent px-5 py-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-zinc-600">STATUS</p>
+                    <p className="font-mono text-sm font-bold text-cyber-green">AWAITING RECRUITS</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono text-[9px] uppercase tracking-widest text-zinc-600">CLEARANCE</p>
+                    <p className="font-mono text-sm font-bold text-zinc-300">PUBLIC</p>
+                  </div>
                 </div>
               </div>
             </div>
