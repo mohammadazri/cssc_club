@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import clsx from "clsx";
 import { useGamePersistence } from "@/hooks/useGameState";
 import { Shield, Target, Zap, RefreshCw, Home, ExternalLink, Lock, Unlock, Terminal } from "lucide-react";
+import { ShareAchievementButton } from "@/components/ShareAchievementButton";
 
 // --- CONFIGURATION ---
 // Fallback links if env vars are missing
@@ -247,6 +248,19 @@ export function DebriefClient() {
                 <span className="text-sm font-bold text-cyber-green">Live Dashboard</span>
               </Link>
             </div>
+
+            {lastRun && (
+              <ShareAchievementButton
+                data={{
+                  username: lastRun.username || "Anonymous",
+                  score: lastRun.score,
+                  rank,
+                  accuracy,
+                  outcome: lastRun.outcome,
+                  difficulty: lastRun.difficulty,
+                }}
+              />
+            )}
           </motion.div>
 
           {/* RIGHT COLUMN: THE UPLINK (QR) */}
