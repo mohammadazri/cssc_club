@@ -71,8 +71,8 @@ export async function upsertPlayer(
 
     if (error || !inserted) return null;
     return { playerId: inserted.id, username: inserted.username };
-  } catch (err: any) {
-    if (err.message === "USERNAME_TAKEN") {
+  } catch (err: unknown) {
+    if (err instanceof Error && err.message === "USERNAME_TAKEN") {
       throw err; // Propagate to caller
     }
     return null;

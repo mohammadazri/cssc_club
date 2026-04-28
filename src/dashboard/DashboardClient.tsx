@@ -233,7 +233,12 @@ function LeaderRow({
 
 /* ─── Activity item ───────────────────────────────────────────── */
 function ActivityItem({ entry }: { entry: LeaderboardRow }) {
-  const elapsed = Math.round((Date.now() - new Date(entry.finishedAt).getTime()) / 60000);
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 30_000);
+    return () => clearInterval(id);
+  }, []);
+  const elapsed = Math.round((now - new Date(entry.finishedAt).getTime()) / 60000);
   return (
     <motion.div
       layout

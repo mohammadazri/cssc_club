@@ -7,7 +7,6 @@ import { Howl } from "howler";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 import { TerminalText } from "@/components/ui/TerminalText";
-import { useSilentSplinePreloader } from "@/hooks/useSplinePreloader";
 import { SplineScene } from "@/components/3d/SplineScene";
 
 // --- DATA CONSTANTS ---

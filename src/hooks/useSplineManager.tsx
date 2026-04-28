@@ -13,7 +13,7 @@ type ManagerState = {
   rect?: DOMRect;
 };
 
-let managerApi: {
+const managerApi: {
   showSceneIn?: (sceneUrl: string, container: HTMLElement | null) => void;
   hide?: () => void;
 } = {};
@@ -56,7 +56,6 @@ function GlobalSplineHost() {
       {state.visible && state.sceneUrl ? (
         <div className="h-full w-full">
           {/* Render Spline into this single host and update its scene prop to swap scenes */}
-          {/* @ts-ignore dynamic component */}
           <Spline scene={state.sceneUrl} className="h-full w-full" />
         </div>
       ) : null}
@@ -66,13 +65,13 @@ function GlobalSplineHost() {
 
 export function initGlobalSplineHost() {
   if (typeof window === "undefined") return;
-  if ((window as any).__globalSplineHostMounted) return;
+  if ((window as Window & { __globalSplineHostMounted?: boolean }).__globalSplineHostMounted) return;
   const container = document.createElement("div");
   container.id = "__global_spline_host";
   document.body.appendChild(container);
   const root = createRoot(container);
   root.render(React.createElement(GlobalSplineHost));
-  (window as any).__globalSplineHostMounted = true;
+  (window as Window & { __globalSplineHostMounted?: boolean }).__globalSplineHostMounted = true;
 }
 
 export function showSceneIn(sceneUrl: string, container: HTMLElement | null) {

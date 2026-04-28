@@ -133,7 +133,7 @@ export function SplineScene({
         </div>
       </div>
     );
-  }, [fallbackVariant, label]);
+  }, [fallbackVariant, label, looksValid, normalizedUrl]);
 
   if (!enabled) {
     return <div className={clsx("h-full w-full", className)}>{fallback}</div>;
@@ -150,8 +150,8 @@ export function SplineScene({
         <Spline
           scene={
             // Prefer blob URL cached in memory by preloader for fastest load
-            (typeof window !== "undefined" && (window as any).__splineSceneBlobs && (window as any).__splineSceneBlobs[normalizedUrl])
-              ? (window as any).__splineSceneBlobs[normalizedUrl]
+            (typeof window !== "undefined" && (window as Window & { __splineSceneBlobs?: Record<string, string> }).__splineSceneBlobs?.[normalizedUrl])
+              ? (window as Window & { __splineSceneBlobs?: Record<string, string> }).__splineSceneBlobs![normalizedUrl]
               : normalizedUrl
           }
           onError={() => setFailed(true)}

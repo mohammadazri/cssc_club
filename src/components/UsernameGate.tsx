@@ -45,8 +45,6 @@ export function UsernameGate({
 
     try {
       // Import here to avoid circular deps at module level
-      const { usePlayerSession: _ } = await import("@/hooks/usePlayerSession");
-      // We call createSession directly via the session lib
       const { getOrCreateDeviceId } = await import("@/lib/session");
       const { upsertPlayer } = await import("@/lib/supabase/queries");
       const { saveSession } = await import("@/lib/session");
@@ -65,8 +63,8 @@ export function UsernameGate({
 
       saveSession(session);
       onComplete(session);
-    } catch (err: any) {
-      if (err.message === "USERNAME_TAKEN") {
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "USERNAME_TAKEN") {
         setError("Callsign already in use by another operative.");
         return;
       }

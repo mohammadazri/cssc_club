@@ -14,11 +14,13 @@ export function usePlayerSession() {
   const [session, setSession] = useState<PlayerSession | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Hydrate from localStorage on mount
+  // Hydrate from localStorage on mount — use startTransition to batch the update
   useEffect(() => {
     const stored = loadSession();
-    setSession(stored);
-    setLoading(false);
+    Promise.resolve().then(() => {
+      setSession(stored);
+      setLoading(false);
+    });
   }, []);
 
   const createSession = useCallback(async (username: string): Promise<PlayerSession> => {

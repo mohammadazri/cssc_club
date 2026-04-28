@@ -38,7 +38,7 @@ function StatBox({ label, value, icon: Icon, color = "text-white" }: { label: st
   );
 }
 
-function RankBadge({ rank, score }: { rank: string; score: number }) {
+function RankBadge({ rank }: { rank: string }) {
   // determine visual tier from rank name
   const tier = rank.includes("Cyber")
     ? "elite"
@@ -112,13 +112,12 @@ export function DebriefClient() {
   const qrTargetUrl = qrTarget === "whatsapp" ? whatsappUrl : qrTarget === "instagram" ? instagramUrl : linkedinUrl;
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qrTargetUrl)}&color=00ff88&bgcolor=05100a&margin=10`;
 
-  const score = lastRun?.score || 0;
   const health = lastRun?.healthRemaining || 0;
   const isSuccess = (lastRun?.outcome || "failed") === "success";
   const accuracy = lastRun ? Math.round((lastRun.correctCount / lastRun.totalCount) * 100) : 0;
 
   // Average points earned per question (helps infer difficulty mix)
-  const avgPoints = lastRun && lastRun.totalCount > 0 ? score / lastRun.totalCount : 0;
+  const avgPoints = lastRun && lastRun.totalCount > 0 ? lastRun.score / lastRun.totalCount : 0;
 
   const { rank, subtitle } = useMemo(() => {
     // rank logic that accounts for accuracy and avgPoints so short easy runs can still earn high rank
@@ -141,7 +140,7 @@ export function DebriefClient() {
     }
 
     return { rank: "Initiate", subtitle: "Learn the basics and try again" };
-  }, [lastRun, accuracy, avgPoints, score]);
+  }, [lastRun, accuracy, avgPoints]);
 
   const isEliteVisual = rank === "Cyber Sentinel" || rank === "Security Specialist" || rank === "Net Defender";
 
@@ -203,7 +202,7 @@ export function DebriefClient() {
           >
             {/* Rank Card */}
             <div className="bg-zinc-900/50 border border-white/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 backdrop-blur-md">
-              <RankBadge rank={rank} score={score} />
+              <RankBadge rank={rank} />
                 <div className="text-center sm:text-left space-y-2">
                   {isEliteVisual && (
                     <div className="pointer-events-none absolute inset-0 flex items-start justify-center">
@@ -228,7 +227,7 @@ export function DebriefClient() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-3 gap-3">
-              <StatBox label="Score" value={score} icon={Target} color="text-purple-400" />
+              <StatBox label="Score" value={lastRun?.score ?? 0} icon={Target} color="text-purple-400" />
               <StatBox label="Accuracy" value={`${accuracy}%`} icon={Zap} color="text-yellow-400" />
               <StatBox label="Integrity" value={`${Math.round((health/3)*100)}%`} icon={Shield} color={health > 1 ? "text-cyber-green" : "text-red-400"} />
             </div>

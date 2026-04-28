@@ -12,8 +12,10 @@ export function useUnlockProgress(playerId: string | null) {
 
   useEffect(() => {
     if (!playerId) {
-      setUnlocks(OFFLINE_UNLOCKS);
-      setLoaded(true);
+      Promise.resolve().then(() => {
+        setUnlocks(OFFLINE_UNLOCKS);
+        setLoaded(true);
+      });
       return;
     }
 
