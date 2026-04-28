@@ -165,13 +165,13 @@ export function LandingClient() {
       </div>
 
       {/* 2. MAIN LAYOUT GRID */}
-      <div className="relative z-10 flex min-h-screen flex-col justify-between p-4 sm:p-8 lg:p-12 w-full max-w-none mx-auto">
+      <div className="relative z-10 flex min-h-screen flex-col justify-between p-4 sm:p-8 lg:p-12 w-full max-w-none mx-auto pointer-events-none">
         
         {/* TOP BAR: HEADER */}
         <motion.header 
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="flex items-start justify-between border-b border-white/15 pb-6"
+          className="flex items-start justify-between border-b border-white/15 pb-6 pointer-events-auto"
         >
           <div className="flex items-center gap-5">
             {/* Logo Container */}
@@ -209,7 +209,7 @@ export function LandingClient() {
         </motion.header>
 
         {/* CENTER: MAIN CONTENT */}
-        <div className="flex w-full max-w-3xl items-center my-auto">
+        <div className="flex w-full max-w-3xl items-center my-auto pointer-events-auto">
           
           {/* Typography & CTA */}
           <div className="space-y-8">
@@ -278,7 +278,7 @@ export function LandingClient() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1 }}
-          className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-100 font-mono"
+          className="border-t border-white/10 pt-6 flex flex-col sm:flex-row justify-between items-center text-xs text-zinc-100 font-mono pointer-events-auto"
         >
           <div>
             SECURE CONNECTION // UNIKL MIIT
