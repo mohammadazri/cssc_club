@@ -315,7 +315,7 @@ export function DashboardClient() {
     <div className="relative min-h-screen overflow-hidden bg-[#030303] font-mono text-zinc-100">
 
       {/* ── Batman Beyond background ── */}
-      <div className="pointer-events-none absolute inset-0" style={{ opacity: 0.45 }}>
+      <div className="pointer-events-none absolute inset-0" style={{ opacity: 1 }}>
         <SplineScene
           sceneUrl="/models/batman_beyond.spline"
           label="Dashboard background"
@@ -368,7 +368,7 @@ export function DashboardClient() {
       <div className="relative z-10 flex h-screen flex-col">
 
         {/* ════ HEADER ════ */}
-        <header className="relative flex items-center justify-between overflow-hidden border-b border-cyber-green/10 bg-black/80 px-6 py-3.5 backdrop-blur-lg">
+        <header className="relative flex flex-col md:flex-row flex-wrap items-center justify-between gap-4 overflow-hidden border-b border-cyber-green/10 bg-black/80 px-4 py-3.5 md:px-6 backdrop-blur-lg">
           <div className="scan-line" />
           <div className="pointer-events-none absolute left-0 top-0 h-px w-56 bg-gradient-to-r from-cyber-green/50 to-transparent" />
           <div className="pointer-events-none absolute bottom-0 right-0 h-px w-56 bg-gradient-to-l from-cyber-green/30 to-transparent" />
@@ -432,10 +432,10 @@ export function DashboardClient() {
         </header>
 
         {/* ════ BODY ════ */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-col lg:flex-row flex-1 overflow-y-auto lg:overflow-hidden">
 
           {/* ── LEFT: Leaderboard ── */}
-          <div className="flex flex-1 flex-col overflow-hidden p-5 lg:p-6 bg-black/40 backdrop-blur-xl border-r border-white/5 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+          <div className="flex flex-1 flex-col overflow-hidden min-h-[60vh] lg:min-h-0 p-4 lg:p-6 bg-black/40 backdrop-blur-xl border-b lg:border-b-0 lg:border-r border-white/5 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
 
             {/* Section header */}
             <div className="mb-4 flex items-center justify-between gap-4">
@@ -538,7 +538,7 @@ export function DashboardClient() {
           </div>
 
           {/* ── RIGHT: Stats + Activity ── */}
-          <div className="flex w-64 flex-col gap-4 overflow-hidden border-l border-white/10 bg-black/50 backdrop-blur-xl p-4 xl:w-72 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+          <div className="flex w-full lg:w-64 xl:w-72 flex-col gap-4 overflow-hidden border-t lg:border-t-0 lg:border-l border-white/10 bg-black/50 backdrop-blur-xl p-4 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
 
             {/* Granted / Denied */}
             <div className="grid grid-cols-2 gap-2">
