@@ -134,6 +134,16 @@ export function LandingClient() {
       <div className="absolute inset-0 bg-grid-pattern opacity-20 pointer-events-none" />
       <div className="absolute inset-0 bg-linear-to-b from-black via-transparent to-black pointer-events-none" />
       
+      {/* 3D Full Screen Background */}
+      <div className="absolute inset-0 opacity-40">
+        <SplineScene
+          sceneUrl="/models/nexbot_robot_character_concept.spline"
+          label="Field Operative"
+          fallbackVariant="vault"
+          className="h-full w-full"
+        />
+      </div>
+
       {/* Floating Particles: More green rising dots for advanced effect */}
       <div className="fixed inset-0 pointer-events-none">
         {mounted && particles.map((particle, i) => (
@@ -198,10 +208,10 @@ export function LandingClient() {
           </div>
         </motion.header>
 
-        {/* CENTER: SPLIT CONTENT */}
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center my-auto">
+        {/* CENTER: MAIN CONTENT */}
+        <div className="flex w-full max-w-3xl items-center my-auto">
           
-          {/* LEFT: Typography & CTA */}
+          {/* Typography & CTA */}
           <div className="space-y-8">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -261,52 +271,6 @@ export function LandingClient() {
               </Link>
             </motion.div>
           </div>
-
-          {/* RIGHT: Nexbot Field Operative */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.4 }}
-            className="hidden lg:block relative"
-          >
-            <div className="relative ml-auto h-[520px] w-full max-w-md overflow-hidden rounded-xl border border-white/10 shadow-[0_20px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(0,255,136,0.05)]">
-              {/* Corner accents */}
-              <div className="pointer-events-none absolute left-2 top-2 z-10 h-6 w-6 border-l-2 border-t-2 border-cyber-green/50" />
-              <div className="pointer-events-none absolute right-2 top-2 z-10 h-6 w-6 border-r-2 border-t-2 border-cyber-green/50" />
-              <div className="pointer-events-none absolute bottom-2 left-2 z-10 h-6 w-6 border-b-2 border-l-2 border-cyber-green/50" />
-              <div className="pointer-events-none absolute bottom-2 right-2 z-10 h-6 w-6 border-b-2 border-r-2 border-cyber-green/50" />
-
-              {/* Top label */}
-              <div className="absolute left-0 right-0 top-0 z-10 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-cyber-green" />
-                  <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-cyber-green/80">FIELD OPERATIVE — ONLINE</span>
-                </div>
-                <span className="font-mono text-[9px] text-zinc-600">UNIT-01</span>
-              </div>
-
-              <SplineScene
-                sceneUrl="/models/nexbot_robot_character_concept.spline"
-                label="Field Operative"
-                fallbackVariant="vault"
-                className="h-full w-full"
-              />
-
-              {/* Bottom status */}
-              <div className="absolute bottom-0 left-0 right-0 z-10 bg-gradient-to-t from-black/90 to-transparent px-5 py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-zinc-600">STATUS</p>
-                    <p className="font-mono text-sm font-bold text-cyber-green">AWAITING RECRUITS</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-mono text-[9px] uppercase tracking-widest text-zinc-600">CLEARANCE</p>
-                    <p className="font-mono text-sm font-bold text-zinc-300">PUBLIC</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </div>
 
         {/* BOTTOM: Footer */}
