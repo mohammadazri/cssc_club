@@ -22,7 +22,7 @@ export function UsernameGate({
   const [submitting, setSubmitting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const dashboardScene = process.env.NEXT_PUBLIC_SPLINE_DASHBOARD_SCENE;
+  const dashboardScene = "/models/nexbot_robot_character_concept.spline";
 
   function validate(val: string): string | null {
     if (val.length < 2) return "Must be at least 2 characters";

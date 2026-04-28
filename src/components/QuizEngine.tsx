@@ -7,15 +7,13 @@ import { Howl } from "howler";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
 
-import type { Difficulty, Question, RunSummary, SceneId } from "@/types/quiz";
+import type { Difficulty, Question, RunSummary } from "@/types/quiz";
 import { useSoundEffects } from "@/hooks/useSoundEffects";
 import { useGamePersistence } from "@/hooks/useGameState";
 import { useAdaptiveDifficulty } from "@/hooks/useAdaptiveDifficulty";
 import { OptionButton } from "@/components/ui/OptionButton";
 import { TrapOverlay } from "@/components/3d/TrapOverlay";
-import { VaultScene } from "@/components/3d/VaultScene";
-import { PhishingScene } from "@/components/3d/PhishingScene";
-import { MainframeScene } from "@/components/3d/MainframeScene";
+import { SplineScene } from "@/components/3d/SplineScene";
 
 const TIME_PER_QUESTION = 45;
 const CRITICAL_TIME = 10;
@@ -34,10 +32,27 @@ function getDifficultyColor(difficulty: Question["difficulty"]) {
   }
 }
 
-function Scene({ sceneId }: { sceneId: SceneId }) {
-  if (sceneId === "vault") return <VaultScene className="h-full" />;
-  if (sceneId === "phishing") return <PhishingScene className="h-full" />;
-  return <MainframeScene className="h-full" />;
+const DIFFICULTY_SCENE_MAP: Record<Difficulty, string> = {
+  ScriptKiddie: "/models/genkub_greeting_robot.spline",
+  Hacker: "/models/lock.spline",
+  Elite: "/models/server.spline",
+};
+
+const DIFFICULTY_FALLBACK_MAP: Record<Difficulty, "vault" | "phishing" | "mainframe"> = {
+  ScriptKiddie: "vault",
+  Hacker: "phishing",
+  Elite: "mainframe",
+};
+
+function Scene({ difficulty }: { difficulty: Difficulty }) {
+  return (
+    <SplineScene
+      sceneUrl={DIFFICULTY_SCENE_MAP[difficulty]}
+      label={difficulty}
+      fallbackVariant={DIFFICULTY_FALLBACK_MAP[difficulty]}
+      className="h-full"
+    />
+  );
 }
 
 function HealthDisplay({ current, max }: { current: number; max: number }) {
@@ -548,12 +563,12 @@ export function QuizEngine({
               className="overflow-hidden rounded-xl border border-white/10 bg-surface/60 shadow-[0_0_30px_rgba(0,255,136,0.08)]"
             >
               <div className="h-48 sm:h-64 lg:h-80 xl:h-96">
-                <Scene sceneId={q.sceneId} />
+                <Scene difficulty={difficulty ?? "ScriptKiddie"} />
               </div>
               <div className="flex items-center justify-between border-t border-white/5 bg-white/5 px-3 py-2 sm:px-4 sm:py-3">
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full bg-cyber-green animate-pulse" />
-                  <span className="font-mono text-xs uppercase tracking-wider text-zinc-400">{q.sceneId}</span>
+                  <span className="font-mono text-xs uppercase tracking-wider text-zinc-400">{difficulty ?? "RECON"}</span>
                 </div>
                 <span className="text-xs text-zinc-500 hidden sm:inline">
                   Objective: <span className="text-zinc-300">Identify the threat</span>

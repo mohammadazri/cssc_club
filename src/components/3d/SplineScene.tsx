@@ -87,8 +87,8 @@ export function SplineScene({
 }) {
   const [failed, setFailed] = useState(false);
   const normalizedUrl = typeof sceneUrl === "string" ? sceneUrl.trim() : "";
-  const looksLikeSplineCode = normalizedUrl.endsWith("/scene.splinecode");
-  const enabled = Boolean(normalizedUrl) && looksLikeSplineCode && !failed;
+  const looksValid = normalizedUrl.endsWith("/scene.splinecode") || normalizedUrl.endsWith(".spline");
+  const enabled = Boolean(normalizedUrl) && looksValid && !failed;
 
   // Delay mounting the heavy Spline component slightly to ensure UI interactivity
   const [mountSpline, setMountSpline] = useState(false);
@@ -120,14 +120,14 @@ export function SplineScene({
           </p>
           <SceneFallbackVisual variant={fallbackVariant} />
           <p className="mt-3 text-xs text-zinc-500">
-            Paste the Spline React-export URL ending in
-            <span className="font-mono"> /scene.splinecode</span> into
-            <span className="font-mono"> .env.local</span>.
+            Place a <span className="font-mono">.spline</span> file under
+            <span className="font-mono"> public/models/</span> and pass its path here.
           </p>
-          {!looksLikeSplineCode && Boolean(normalizedUrl) ? (
+          {!looksValid && Boolean(normalizedUrl) ? (
             <p className="mt-2 text-[11px] leading-4 text-zinc-500">
-              The current value looks like a share-page URL, not a
-              <span className="font-mono"> .splinecode</span> resource.
+              Expected a path ending in
+              <span className="font-mono"> .spline</span> or
+              <span className="font-mono"> .splinecode</span>.
             </p>
           ) : null}
         </div>

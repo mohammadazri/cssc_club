@@ -5,6 +5,12 @@ import { SplineScene } from "./SplineScene";
 type Level = "easy" | "medium" | "hard";
 type FallbackVariant = "vault" | "phishing" | "mainframe";
 
+const SCENE_MAP: Record<Level, string> = {
+  easy: "/models/genkub_greeting_robot.spline",
+  medium: "/models/lock.spline",
+  hard: "/models/server.spline",
+};
+
 const FALLBACK_MAP: Record<Level, FallbackVariant> = {
   easy: "vault",
   medium: "phishing",
@@ -18,13 +24,7 @@ export function DifficultyScene({
   level: Level | null;
   className?: string;
 }) {
-  const urlMap: Record<Level, string | undefined> = {
-    easy: process.env.NEXT_PUBLIC_SPLINE_EASY_BG_SCENE,
-    medium: process.env.NEXT_PUBLIC_SPLINE_MEDIUM_BG_SCENE,
-    hard: process.env.NEXT_PUBLIC_SPLINE_HARD_BG_SCENE,
-  };
-
-  const sceneUrl = level ? urlMap[level] : undefined;
+  const sceneUrl = level ? SCENE_MAP[level] : undefined;
   const fallbackVariant: FallbackVariant = level ? FALLBACK_MAP[level] : "vault";
 
   return (

@@ -221,7 +221,7 @@ export function LandingClient() {
               
               <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tighter text-white mb-6 leading-[0.9] relative">
                 <span className="block text-white text-2xl sm:text-3xl font-mono tracking-normal mb-2 font-normal">
-                  <span className="animate-pulse text-cyber-green">&#9654;</span> Tue. 16/12/2025
+                  <span className="animate-pulse text-cyber-green">&#9654;</span> Wed. 29/04/2026
                 </span>
                  WE NEED <br/>
                 <span className="text-transparent bg-clip-text bg-linear-to-r from-cyber-green to-emerald-600">

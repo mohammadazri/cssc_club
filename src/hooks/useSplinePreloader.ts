@@ -8,58 +8,31 @@ declare global {
   }
 }
 
-const CACHE_NAME = "spline-scenes-v1";
-
-// Get all Spline scene URLs from environment
-function getSplineUrls(): string[] {
-  const urls: string[] = [];
-
-  const candidates = [
-    process.env.NEXT_PUBLIC_SPLINE_VAULT_SCENE,
-    process.env.NEXT_PUBLIC_SPLINE_PHISHING_SCENE,
-    process.env.NEXT_PUBLIC_SPLINE_MAINFRAME_SCENE,
-    // V3 additions
-    process.env.NEXT_PUBLIC_SPLINE_EASY_BG_SCENE,
-    process.env.NEXT_PUBLIC_SPLINE_MEDIUM_BG_SCENE,
-    process.env.NEXT_PUBLIC_SPLINE_HARD_BG_SCENE,
-    process.env.NEXT_PUBLIC_SPLINE_DASHBOARD_SCENE,
-  ];
-
-  for (const url of candidates) {
-    if (url?.endsWith("/scene.splinecode")) urls.push(url);
-  }
-
-  return urls;
-}
+// All local Spline scenes served from /public/models/
+const LOCAL_SPLINE_SCENES = [
+  "/models/genkub_greeting_robot.spline",
+  "/models/lock.spline",
+  "/models/server.spline",
+  "/models/nexbot_robot_character_concept.spline",
+  "/models/batman_beyond.spline",
+];
 
 async function cacheSplineScene(url: string): Promise<boolean> {
   try {
-    const cache = await caches.open(CACHE_NAME);
-    
-    // Check if already cached
-    const cached = await cache.match(url);
-    if (cached) {
-      return true;
-    }
-    
-    // Fetch and cache
-    const response = await fetch(url, { mode: "cors" });
-    if (response.ok) {
-      await cache.put(url, response.clone());
-      // Also create an in-memory blob URL for faster local access during this session
-      try {
-        if (typeof window !== "undefined") {
-          const blob = await response.clone().blob();
-          const blobUrl = URL.createObjectURL(blob);
-          window.__splineSceneBlobs = window.__splineSceneBlobs || {};
-          window.__splineSceneBlobs[url] = blobUrl;
-        }
-      } catch {}
-      return true;
-    }
-    return false;
+    if (typeof window === "undefined") return false;
+
+    // Already cached in memory this session
+    if (window.__splineSceneBlobs?.[url]) return true;
+
+    const response = await fetch(url);
+    if (!response.ok) return false;
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    window.__splineSceneBlobs = window.__splineSceneBlobs ?? {};
+    window.__splineSceneBlobs[url] = blobUrl;
+    return true;
   } catch {
-    // Cache API might not be available or CORS issue
     return false;
   }
 }
@@ -72,19 +45,10 @@ export function useSplinePreloader() {
   const startedRef = useRef(false);
 
   useEffect(() => {
-    // Prevent double-run in strict mode
     if (startedRef.current) return;
     startedRef.current = true;
 
-    const urls = getSplineUrls();
-    
-    if (urls.length === 0) {
-      // No scenes to preload, mark as ready
-      setStatus("ready");
-      setProgress(100);
-      return;
-    }
-
+    const urls = LOCAL_SPLINE_SCENES;
     setTotalCount(urls.length);
     setStatus("loading");
 
@@ -97,9 +61,8 @@ export function useSplinePreloader() {
         setLoadedCount(loaded);
         setProgress(Math.round((loaded / urls.length) * 100));
         return success;
-      })
+      }),
     ).then(() => {
-      // Even if some fail, we proceed (fallback will show)
       setStatus("ready");
     }).catch(() => {
       setStatus("error");
@@ -109,42 +72,21 @@ export function useSplinePreloader() {
   return { status, progress, loadedCount, totalCount };
 }
 
-// Silent background preloader - use on landing page
+// Silent background preloader — use on landing page
 export function useSilentSplinePreloader() {
   const startedRef = useRef(false);
-  
+
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    
-    // Run in background without blocking UI
-    const urls = getSplineUrls();
-    if (urls.length === 0) return;
-    
-    // Preload all scenes silently in background
-    urls.forEach((url) => {
-      cacheSplineScene(url).catch(() => {
-        // Silently ignore errors
-      });
+
+    LOCAL_SPLINE_SCENES.forEach((url) => {
+      cacheSplineScene(url).catch(() => {});
     });
   }, []);
 }
 
-// Check if scenes are already cached (for instant load check)
 export async function areScenesCached(): Promise<boolean> {
-  try {
-    const urls = getSplineUrls();
-    if (urls.length === 0) return true;
-    
-    const cache = await caches.open(CACHE_NAME);
-    
-    for (const url of urls) {
-      const cached = await cache.match(url);
-      if (!cached) return false;
-    }
-    
-    return true;
-  } catch {
-    return false;
-  }
+  if (typeof window === "undefined") return false;
+  return LOCAL_SPLINE_SCENES.every((url) => Boolean(window.__splineSceneBlobs?.[url]));
 }
