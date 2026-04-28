@@ -65,7 +65,12 @@ export function UsernameGate({
 
       saveSession(session);
       onComplete(session);
-    } catch {
+    } catch (err: any) {
+      if (err.message === "USERNAME_TAKEN") {
+        setError("Callsign already in use by another operative.");
+        return;
+      }
+
       setError("Connection failed — proceeding in offline mode");
       const { getOrCreateDeviceId, saveSession } = await import("@/lib/session");
       const deviceId = getOrCreateDeviceId();

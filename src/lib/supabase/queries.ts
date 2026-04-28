@@ -12,7 +12,7 @@ export interface LeaderboardRow {
   totalCount: number;
 }
 
-// Register or retrieve a player by device_id, falling back to username lookup
+// Register or retrieve a player by device_id, ensuring username uniqueness
 export async function upsertPlayer(
   username: string,
   deviceId: string,
@@ -21,8 +21,27 @@ export async function upsertPlayer(
   if (!sb) return null;
 
   try {
-    // Try to find by device_id first
-    const { data: byDevice } = await sb
+    // 1. Check if the username is already taken by ANYONE
+    const { data: existingByName } = await sb
+      .from("players")
+      .select("id, device_id, username")
+      .eq("username", username)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (existingByName) {
+      if (existingByName.device_id === deviceId) {
+        // It's the same user logging in with their existing username
+        return { playerId: existingByName.id, username: existingByName.username };
+      } else {
+        // Username is taken by a DIFFERENT device/user
+        throw new Error("USERNAME_TAKEN");
+      }
+    }
+
+    // 2. Check if this device already has an account but wants a NEW username
+    const { data: existingByDevice } = await sb
       .from("players")
       .select("id, username")
       .eq("device_id", deviceId)
@@ -30,24 +49,20 @@ export async function upsertPlayer(
       .limit(1)
       .maybeSingle();
 
-    if (byDevice) {
-      return { playerId: byDevice.id, username: byDevice.username };
+    if (existingByDevice) {
+      // Update their existing account with the new username
+      const { data: updated, error } = await sb
+        .from("players")
+        .update({ username })
+        .eq("id", existingByDevice.id)
+        .select("id, username")
+        .single();
+        
+      if (error || !updated) return null;
+      return { playerId: updated.id, username: updated.username };
     }
 
-    // Fallback: find by username (cross-device recovery)
-    const { data: byUsername } = await sb
-      .from("players")
-      .select("id, username")
-      .eq("username", username)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    if (byUsername) {
-      return { playerId: byUsername.id, username: byUsername.username };
-    }
-
-    // Create new player
+    // 3. Create brand new player
     const { data: inserted, error } = await sb
       .from("players")
       .insert({ username, device_id: deviceId })
@@ -56,7 +71,10 @@ export async function upsertPlayer(
 
     if (error || !inserted) return null;
     return { playerId: inserted.id, username: inserted.username };
-  } catch {
+  } catch (err: any) {
+    if (err.message === "USERNAME_TAKEN") {
+      throw err; // Propagate to caller
+    }
     return null;
   }
 }
