@@ -90,7 +90,7 @@ export function UsernameGate({
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-void-black">
       {/* 3D background */}
-      <div className="absolute inset-0 opacity-40 pointer-events-none">
+      <div className="absolute inset-0 opacity-40">
         <SplineScene
           sceneUrl={dashboardScene}
           label="Gateway"
