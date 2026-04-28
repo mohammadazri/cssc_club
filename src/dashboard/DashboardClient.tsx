@@ -129,10 +129,10 @@ function PodiumCard({
       animate={{ opacity: 1, x: 0, scale: 1 }}
       exit={{ opacity: 0, x: 24, scale: 0.96 }}
       transition={{ duration: 0.4, delay: (rank - 1) * 0.06 }}
-      className={clsx("group relative overflow-hidden rounded-xl border px-5 py-4 transition-all", s.row)}
+      className={clsx("group relative overflow-hidden rounded-xl border px-5 py-4 transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(250,204,21,0.1)] bg-black/60 backdrop-blur-md", s.row)}
     >
-      <div className={clsx("absolute inset-y-0 left-0 w-1", s.accent)} />
-      <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.035] to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+      <div className={clsx("absolute inset-y-0 left-0 w-1 shadow-[0_0_15px_currentColor]", s.accent)} />
+      <div className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
 
       <div className="flex items-center gap-4 pl-2">
         <div className={clsx("w-10 shrink-0 text-center font-black", s.medal)}>
@@ -145,13 +145,13 @@ function PodiumCard({
             <DiffBadge d={entry.difficulty} />
             <span className={clsx(
               "font-mono text-[10px] font-bold",
-              entry.outcome === "success" ? "text-cyber-green" : "text-alert-red",
+              entry.outcome === "success" ? "text-cyber-green drop-shadow-[0_0_5px_rgba(0,255,136,0.5)]" : "text-alert-red drop-shadow-[0_0_5px_rgba(255,34,68,0.5)]",
             )}>
               {entry.outcome === "success" ? "[ ACCESS GRANTED ]" : "[ ACCESS DENIED ]"}
             </span>
           </div>
           <div className="mt-2 flex items-center gap-3">
-            <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/5">
+            <div className="h-1 flex-1 overflow-hidden rounded-full bg-white/10">
               <motion.div
                 className={clsx("h-full rounded-full bg-gradient-to-r", s.bar)}
                 initial={{ width: 0 }}
@@ -159,13 +159,13 @@ function PodiumCard({
                 transition={{ duration: 1, ease: "easeOut", delay: (rank - 1) * 0.06 + 0.2 }}
               />
             </div>
-            <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-500">{accuracy}% ACC</span>
+            <span className="shrink-0 font-mono text-xs tabular-nums text-zinc-400 font-bold">{accuracy}% ACC</span>
           </div>
         </div>
 
         <div className="shrink-0 text-right">
           <div className={clsx("font-mono", s.score)}>{entry.score.toLocaleString()}</div>
-          <div className="font-mono text-[10px] text-zinc-600">pts</div>
+          <div className="font-mono text-[10px] text-zinc-500 font-bold uppercase tracking-widest">pts</div>
         </div>
       </div>
     </motion.div>
@@ -192,37 +192,39 @@ function LeaderRow({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 12 }}
       transition={{ duration: 0.3, delay: Math.min((rank - 4) * 0.04, 0.3) }}
-      className="group flex items-center gap-3 rounded-lg border border-white/[0.05] bg-white/[0.015] px-4 py-2.5 transition-colors hover:border-white/10 hover:bg-white/[0.03]"
+      className="group relative flex items-center gap-3 rounded-lg border border-white/5 bg-black/40 px-4 py-2.5 transition-all duration-300 hover:scale-[1.01] hover:border-cyber-green/50 hover:bg-cyber-green/[0.05] hover:shadow-[0_0_20px_rgba(0,255,136,0.15)] overflow-hidden"
     >
-      <span className="w-7 shrink-0 text-center font-mono text-sm font-black tabular-nums text-zinc-700">
+      <div className="absolute inset-y-0 left-0 w-0.5 bg-transparent transition-colors group-hover:bg-cyber-green" />
+      
+      <span className="w-7 shrink-0 text-center font-mono text-sm font-black tabular-nums text-zinc-500 group-hover:text-cyber-green/70 transition-colors">
         {rank.toString().padStart(2, "0")}
       </span>
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate font-mono text-sm text-zinc-300">@{entry.username}</span>
+          <span className="truncate font-mono text-sm font-bold text-zinc-200 group-hover:text-white transition-colors">@{entry.username}</span>
           <DiffBadge d={entry.difficulty} />
           <span className={clsx(
             "shrink-0 font-mono text-[9px] font-bold",
-            entry.outcome === "success" ? "text-cyber-green/60" : "text-alert-red/60",
+            entry.outcome === "success" ? "text-cyber-green/80" : "text-alert-red/80",
           )}>
             {entry.outcome === "success" ? "✓" : "✗"}
           </span>
         </div>
         <div className="mt-1 flex items-center gap-2">
-          <div className="h-px flex-1 overflow-hidden rounded-full bg-white/5">
+          <div className="h-px flex-1 overflow-hidden rounded-full bg-white/10">
             <motion.div
-              className="h-full rounded-full bg-cyber-green/25"
+              className="h-full rounded-full bg-cyber-green/50 group-hover:bg-cyber-green transition-colors"
               initial={{ width: 0 }}
               animate={{ width: `${pct}%` }}
               transition={{ duration: 0.7, ease: "easeOut" }}
             />
           </div>
-          <span className="shrink-0 font-mono text-[9px] tabular-nums text-zinc-700">{accuracy}%</span>
+          <span className="shrink-0 font-mono text-[9px] font-bold tabular-nums text-zinc-500 group-hover:text-zinc-300">{accuracy}%</span>
         </div>
       </div>
 
-      <span className="shrink-0 font-mono text-sm font-bold tabular-nums text-cyber-green">
+      <span className="shrink-0 font-mono text-sm font-black tabular-nums text-cyber-green drop-shadow-[0_0_8px_rgba(0,255,136,0.3)]">
         {entry.score.toLocaleString()}
       </span>
     </motion.div>
@@ -313,7 +315,7 @@ export function DashboardClient() {
     <div className="relative min-h-screen overflow-hidden bg-[#030303] font-mono text-zinc-100">
 
       {/* ── Batman Beyond background ── */}
-      <div className="pointer-events-none absolute inset-0" style={{ opacity: 0.18 }}>
+      <div className="pointer-events-none absolute inset-0" style={{ opacity: 0.45 }}>
         <SplineScene
           sceneUrl="/models/batman_beyond.spline"
           label="Dashboard background"
@@ -372,20 +374,30 @@ export function DashboardClient() {
           <div className="pointer-events-none absolute bottom-0 right-0 h-px w-56 bg-gradient-to-l from-cyber-green/30 to-transparent" />
 
           {/* Left: identity */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-cyber-green/30 bg-cyber-green/[0.07]">
+          <div className="flex items-center gap-5">
+            <Link
+              href="/"
+              className="group relative flex h-11 px-4 items-center gap-2 justify-center rounded-xl border border-alert-red/30 bg-alert-red/10 transition-all hover:border-alert-red hover:bg-alert-red/20 overflow-hidden shadow-[0_0_15px_rgba(255,34,68,0.15)] hover:shadow-[0_0_25px_rgba(255,34,68,0.3)]"
+            >
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-alert-red/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
+              <span className="font-mono text-xs font-bold uppercase tracking-widest text-alert-red transition-colors group-hover:text-white">
+                ← ABORT TO HQ
+              </span>
+            </Link>
+            <div className="h-8 w-px bg-white/10" />
+            <div className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-cyber-green/50 bg-cyber-green/10 shadow-[0_0_15px_rgba(0,255,136,0.15)]">
               <svg className="h-5 w-5 text-cyber-green" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
               <span className="absolute -right-0.5 -top-0.5 h-2 w-2 animate-ping rounded-full bg-cyber-green opacity-75" />
-              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-cyber-green" />
+              <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-cyber-green shadow-[0_0_8px_rgba(0,255,136,1)]" />
             </div>
             <div>
-              <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-zinc-700">CSSC CLUB · UNIKL MIIT</p>
-              <h1 className="font-mono text-base font-black uppercase tracking-widest text-white">
+              <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-zinc-500">CSSC CLUB · UNIKL MIIT</p>
+              <h1 className="font-mono text-base font-black uppercase tracking-widest text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
                 ZERO DAY RECRUIT
                 <span className="mx-2 text-zinc-700">/</span>
-                <GlitchText text="OPS CENTER" className="text-cyber-green" />
+                <GlitchText text="OPS CENTER" className="text-cyber-green drop-shadow-[0_0_8px_rgba(0,255,136,0.5)]" />
               </h1>
             </div>
           </div>
@@ -423,7 +435,7 @@ export function DashboardClient() {
         <div className="flex flex-1 overflow-hidden">
 
           {/* ── LEFT: Leaderboard ── */}
-          <div className="flex flex-1 flex-col overflow-hidden p-5 lg:p-6">
+          <div className="flex flex-1 flex-col overflow-hidden p-5 lg:p-6 bg-black/40 backdrop-blur-xl border-r border-white/5 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
 
             {/* Section header */}
             <div className="mb-4 flex items-center justify-between gap-4">
@@ -526,7 +538,7 @@ export function DashboardClient() {
           </div>
 
           {/* ── RIGHT: Stats + Activity ── */}
-          <div className="flex w-64 flex-col gap-4 overflow-hidden border-l border-white/[0.04] bg-black/20 p-4 xl:w-72">
+          <div className="flex w-64 flex-col gap-4 overflow-hidden border-l border-white/10 bg-black/50 backdrop-blur-xl p-4 xl:w-72 relative z-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
 
             {/* Granted / Denied */}
             <div className="grid grid-cols-2 gap-2">
@@ -615,12 +627,6 @@ export function DashboardClient() {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="font-mono text-[9px] uppercase tracking-widest text-zinc-700 transition-colors hover:text-zinc-400"
-            >
-              ← Mission HQ
-            </Link>
             <span className="font-mono text-[9px] text-zinc-800">V3.0.0</span>
           </div>
         </footer>
